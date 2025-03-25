@@ -34,7 +34,7 @@ This document logs the key architectural decisions made during the design of our
 Use Docker Swarm for container orchestration instead of Kubernetes.
 
 ### Date
-2025-03-20
+2025-03-25
 
 ### Context
 We needed a container orchestration platform that provides high availability while remaining manageable for a small team.
@@ -67,7 +67,7 @@ We needed a container orchestration platform that provides high availability whi
 Use Ansible for server configuration and application deployment.
 
 ### Date
-2025-03-22
+2025-03-25
 
 ### Context
 We needed a tool to automate server setup and application deployment across multiple environments.
@@ -103,7 +103,7 @@ We needed a tool to automate server setup and application deployment across mult
 Use Terraform for provisioning all cloud resources.
 
 ### Date
-2023-11-16
+2025-03-25
 
 ### Context
 We needed a tool to provision and manage infrastructure across multiple cloud providers.
@@ -138,7 +138,7 @@ We needed a tool to provision and manage infrastructure across multiple cloud pr
 Use GitHub Actions for CI/CD and deployment orchestration.
 
 ### Date
-2023-11-17
+2025-03-25
 
 ### Context
 We needed a CI/CD solution that integrates well with our Git workflow and can safely execute Ansible playbooks.
@@ -174,7 +174,7 @@ We needed a CI/CD solution that integrates well with our Git workflow and can sa
 Use git-crypt for encrypting sensitive information in the repository.
 
 ### Date
-2023-11-16
+2025-03-25
 
 ### Context
 We needed a way to securely store secrets alongside our code while maintaining version control.
@@ -211,7 +211,7 @@ We needed a way to securely store secrets alongside our code while maintaining v
 Use SeaweedFS for distributed storage in the Docker Swarm cluster.
 
 ### Date
-2023-11-15
+2025-03-25
 
 ### Context
 We needed a distributed storage solution for container volumes that provides high availability.
@@ -247,7 +247,7 @@ We needed a distributed storage solution for container volumes that provides hig
 Use Traefik as the edge router and load balancer for the Docker Swarm cluster.
 
 ### Date
-2023-11-15
+2025-03-25
 
 ### Context
 We needed a load balancer that integrates well with Docker Swarm and provides automatic service discovery.
@@ -283,7 +283,7 @@ We needed a load balancer that integrates well with Docker Swarm and provides au
 Use Restic to back up data to Cloudflare R2 storage.
 
 ### Date
-2023-11-15
+2025-03-25
 
 ### Context
 We needed a reliable backup solution that works with our distributed storage and provides off-site backups.
@@ -320,7 +320,7 @@ We needed a reliable backup solution that works with our distributed storage and
 Use Netdata for system monitoring and alerting.
 
 ### Date
-2023-11-15
+2025-03-25
 
 ### Context
 We needed a lightweight monitoring solution that provides real-time metrics and alerting.
@@ -357,7 +357,7 @@ We needed a lightweight monitoring solution that provides real-time metrics and 
 Use a multi-cloud approach with Hetzner Cloud as primary infrastructure, GCP for specific services, and Cloudflare for edge services.
 
 ### Date
-2023-11-15
+2025-03-25
 
 ### Context
 We needed to balance cost-effectiveness with access to specialized cloud services.
@@ -392,7 +392,7 @@ We needed to balance cost-effectiveness with access to specialized cloud service
 Organize Ansible configuration with both environment-specific and application-specific variables.
 
 ### Date
-2023-11-17
+2025-03-25
 
 ### Context
 We needed a configuration structure that allows for both environment-level defaults and application-specific customization.
@@ -428,7 +428,7 @@ We needed a configuration structure that allows for both environment-level defau
 Use a Pull Request-based workflow with validation and preview before deployment.
 
 ### Date
-2023-11-17
+2025-03-25
 
 ### Context
 We needed a deployment process that ensures changes are reviewed and validated before reaching production.
