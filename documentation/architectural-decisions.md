@@ -6,10 +6,14 @@ This document logs the key architectural decisions made during the design of our
 
 | Date       | Decision                                      | Reference                                                |
 |------------|-----------------------------------------------|----------------------------------------------------------|
-| 2025-03-25 | Initial infrastructure requirements defined   | [Initial Requirements](discussions/01.0-ideation-prompt.md) |
-| 2025-03-25 | First architecture proposal (Claude)          | [Claude Proposal](discussions/01.1.ideation-claude37response.md) |
-| 2025-03-25 | Refined architecture proposal (Grok)          | [Grok Proposal](discussions/01.2-ideation-grok3response.md) |
+| 2025-03-25 | Initial infrastructure requirements defined   | [Initial Requirements](discussions/2025.03.25.01-ideation/01.0-ideation-prompt.md) |
+| 2025-03-25 | First architecture proposal (Claude)          | [Claude Proposal](discussions/2025.03.25.01-ideation/01.1.ideation-claude37response.md) |
+| 2025-03-25 | Refined architecture proposal (Grok)          | [Grok Proposal](discussions/2025.03.25.01-ideation/01.2-ideation-grok3response.md) |
 | 2025-03-25 | Final architecture decisions documented       | This document                                            |
+| 2025-03-25 | Serverless functions requirements defined     | [Serverless Requirements](discussions/2025.03.25.02-serverless-functions/02.0-serverless-functions-requirements.md) |
+| 2025-03-25 | Serverless functions recommendations          | [Serverless Recommendations](discussions/2025.03.25.02-serverless-functions/02.1-serverless-functions-recommendations.md) |
+| 2025-03-25 | Updated architecture diagrams                 | [Updated Diagrams](discussions/2025.03.25.02-serverless-functions/02.2-updated-architecture-diagrams.md) |
+| 2025-03-25 | Serverless functions implementation details   | [Implementation Details](discussions/2025.03.25.02-serverless-functions/02.4-serverless-functions-implementation.md) |
 
 ## Table of Contents
 
@@ -20,11 +24,15 @@ This document logs the key architectural decisions made during the design of our
 5. [Secrets Management: Git-crypt](#5-secrets-management-git-crypt)
 6. [Storage Solution: SeaweedFS](#6-storage-solution-seaweedfs)
 7. [Load Balancing: Traefik](#7-load-balancing-traefik)
-8. [Backup Strategy: Restic to Cloudflare R2](#8-backup-strategy-restic-to-cloudflare-r2)
+8. [Backup Strategy: Serverless Approach](#8-backup-strategy-serverless-approach)
 9. [Monitoring: Netdata](#9-monitoring-netdata)
 10. [Cloud Providers: Multi-Cloud Approach](#10-cloud-providers-multi-cloud-approach)
 11. [Configuration Structure: Environment and Application-Specific](#11-configuration-structure-environment-and-application-specific)
 12. [Deployment Process: PR-Based Workflow](#12-deployment-process-pr-based-workflow)
+13. [API Integration: Webhook-Based Approach](#13-api-integration-webhook-based-approach)
+14. [Message Vectorization: Change Stream Listener](#14-message-vectorization-change-stream-listener)
+15. [LLM Query Processing: Edge Computing](#15-llm-query-processing-edge-computing)
+16. [Event-Driven Architecture: Pub/Sub](#16-event-driven-architecture-pubsub)
 
 ---
 
@@ -57,7 +65,7 @@ We needed a container orchestration platform that provides high availability whi
 - Negative: Smaller ecosystem of management tools
 
 ### References
-- [Initial Requirements](discussions/01.0-ideation-prompt.md)
+- [Initial Requirements](discussions/2025.03.25.01-ideation/01.0-ideation-prompt.md)
 
 ---
 
@@ -93,7 +101,7 @@ We needed a tool to automate server setup and application deployment across mult
 - Negative: Execution can be slower than compiled alternatives
 
 ### References
-- [Claude Proposal](discussions/01.1.ideation-claude37response.md)
+- [Claude Proposal](discussions/2025.03.25.01-ideation/01.1.ideation-claude37response.md)
 
 ---
 
@@ -128,7 +136,7 @@ We needed a tool to provision and manage infrastructure across multiple cloud pr
 - Negative: State management requires careful handling
 
 ### References
-- [Claude Proposal](discussions/01.1.ideation-claude37response.md)
+- [Claude Proposal](discussions/2025.03.25.01-ideation/01.1.ideation-claude37response.md)
 
 ---
 
@@ -164,7 +172,7 @@ We needed a CI/CD solution that integrates well with our Git workflow and can sa
 - Negative: Vendor lock-in to GitHub
 
 ### References
-- [Grok Proposal](discussions/01.2-ideation-grok3response.md)
+- [Grok Proposal](discussions/2025.03.25.01-ideation/01.2-ideation-grok3response.md)
 
 ---
 
@@ -200,8 +208,8 @@ We needed a way to securely store secrets alongside our code while maintaining v
 - Negative: All-or-nothing access model (no partial access)
 
 ### References
-- [Claude Proposal](discussions/01.1.ideation-claude37response.md)
-- [Initial Requirements](discussions/01.0-ideation-prompt.md)
+- [Claude Proposal](discussions/2025.03.25.01-ideation/01.1.ideation-claude37response.md)
+- [Initial Requirements](discussions/2025.03.25.01-ideation/01.0-ideation-prompt.md)
 
 ---
 
@@ -237,7 +245,7 @@ We needed a distributed storage solution for container volumes that provides hig
 - Negative: Fewer advanced features than Ceph
 
 ### References
-- [Initial Requirements](discussions/01.0-ideation-prompt.md)
+- [Initial Requirements](discussions/2025.03.25.01-ideation/01.0-ideation-prompt.md)
 
 ---
 
@@ -273,44 +281,45 @@ We needed a load balancer that integrates well with Docker Swarm and provides au
 - Negative: Some advanced features require Pro version
 
 ### References
-- [Initial Requirements](discussions/01.0-ideation-prompt.md)
+- [Initial Requirements](discussions/2025.03.25.01-ideation/01.0-ideation-prompt.md)
 
 ---
 
-## 8. Backup Strategy: Restic to Cloudflare R2
+## 8. Backup Strategy: Serverless Approach
 
 ### Decision
-Use Restic to back up data to Cloudflare R2 storage.
+Use a serverless approach for backup automation with temporary servers created from snapshots.
 
 ### Date
 2025-03-25
 
 ### Context
-We needed a reliable backup solution that works with our distributed storage and provides off-site backups.
+We needed a cost-effective and reliable backup solution that minimizes infrastructure costs while ensuring data safety.
 
 ### Rationale
-- **Deduplication**: Efficient storage usage
-- **Encryption**: End-to-end encryption of backups
-- **Incremental backups**: Fast backup process
-- **Multiple backends**: Works with various storage providers
-- **Snapshot model**: Point-in-time recovery
-- **Cloudflare R2**: No egress fees, S3-compatible
+- **Cost efficiency**: Only pay for server resources during actual backup operations
+- **Automation**: Fully automated process triggered by Cloud Scheduler
+- **Flexibility**: Different backup types (daily, weekly, monthly) handled by the same infrastructure
+- **Self-healing**: Server self-destructs after backup completion, eliminating orphaned resources
+- **Monitoring integration**: Status updates stored in Firestore for monitoring
 
 ### Alternatives Considered
-- **Duplicity**: Less efficient for large datasets
-- **Borg**: Limited remote storage options
-- **Cloud provider backups**: Would tie us to specific providers
-- **Custom scripts**: Lack features like deduplication and encryption
+- **Permanent backup server**: Higher cost for an always-on server
+- **Direct volume backup**: More complex to implement with distributed storage
+- **Managed backup service**: Limited options for Hetzner Cloud
+- **Agent-based backup**: Would require agents on all nodes
 
 ### Consequences
-- Positive: Efficient, encrypted backups
-- Positive: Cost-effective storage with R2
-- Positive: Flexible retention policies
-- Negative: Requires careful management of encryption keys
-- Negative: Manual verification needed
+- Positive: Lower infrastructure costs
+- Positive: Automated backup verification
+- Positive: Clear status tracking
+- Negative: More complex initial setup
+- Negative: Dependency on multiple cloud services
 
 ### References
-- [Initial Requirements](discussions/01.0-ideation-prompt.md)
+- [Serverless Requirements](discussions/2025.03.25.02-serverless-functions/02.0-serverless-functions-requirements.md)
+- [Serverless Recommendations](discussions/2025.03.25.02-serverless-functions/02.1-serverless-functions-recommendations.md)
+- [Implementation Details](discussions/2025.03.25.02-serverless-functions/02.4-serverless-functions-implementation.md)
 
 ---
 
@@ -347,7 +356,7 @@ We needed a lightweight monitoring solution that provides real-time metrics and 
 - Negative: Limited long-term storage without additional components
 
 ### References
-- [Initial Requirements](discussions/01.0-ideation-prompt.md)
+- [Initial Requirements](discussions/2025.03.25.01-ideation/01.0-ideation-prompt.md)
 
 ---
 
@@ -382,7 +391,7 @@ We needed to balance cost-effectiveness with access to specialized cloud service
 - Negative: Multiple billing relationships
 
 ### References
-- [Initial Requirements](discussions/01.0-ideation-prompt.md)
+- [Initial Requirements](discussions/2025.03.25.01-ideation/01.0-ideation-prompt.md)
 
 ---
 
@@ -418,7 +427,7 @@ We needed a configuration structure that allows for both environment-level defau
 - Negative: More directories to navigate
 
 ### References
-- [Grok Proposal](discussions/01.2-ideation-grok3response.md)
+- [Grok Proposal](discussions/2025.03.25.01-ideation/01.2-ideation-grok3response.md)
 
 ---
 
@@ -454,4 +463,155 @@ We needed a deployment process that ensures changes are reviewed and validated b
 - Negative: Requires discipline to follow process
 
 ### References
-- [Grok Proposal](discussions/01.2-ideation-grok3response.md)
+- [Grok Proposal](discussions/2025.03.25.01-ideation/01.2-ideation-grok3response.md)
+
+---
+
+## 13. API Integration: Webhook-Based Approach
+
+### Decision
+Use webhook-based Cloudflare Workers for API integrations with Aircall and Guesty.
+
+### Date
+2025-03-25
+
+### Context
+We needed a reliable and real-time method to integrate with external APIs and update our internal systems.
+
+### Rationale
+- **Real-time updates**: Webhooks provide immediate notification of changes
+- **Reduced polling**: No need for constant API polling, reducing load and costs
+- **Edge computing**: Cloudflare Workers process requests at the edge for lower latency
+- **Scalability**: Automatically scales with request volume
+- **Cost efficiency**: Pay only for actual usage
+
+### Alternatives Considered
+- **Polling-based integration**: Higher latency and resource usage
+- **Self-hosted integration service**: Requires additional infrastructure
+- **Direct database integration**: Not supported by external APIs
+- **Third-party integration platforms**: Additional costs and dependencies
+
+### Consequences
+- Positive: Real-time data synchronization
+- Positive: Lower resource usage
+- Positive: Edge processing reduces latency
+- Negative: Dependency on webhook reliability
+- Negative: Requires webhook authentication management
+
+### References
+- [Serverless Requirements](discussions/2025.03.25.02-serverless-functions/02.0-serverless-functions-requirements.md)
+- [Serverless Recommendations](discussions/2025.03.25.02-serverless-functions/02.1-serverless-functions-recommendations.md)
+- [Implementation Details](discussions/2025.03.25.02-serverless-functions/02.4-serverless-functions-implementation.md)
+
+---
+
+## 14. Message Vectorization: Change Stream Listener
+
+### Decision
+Use a MongoDB Change Stream Listener to detect and vectorize RocketChat messages.
+
+### Date
+2025-03-25
+
+### Context
+We needed a way to monitor RocketChat messages and create vector representations for AI processing.
+
+### Rationale
+- **Real-time processing**: Change streams provide immediate notification of new messages
+- **Efficiency**: No polling required, reducing unnecessary database queries
+- **Reliability**: Built-in MongoDB feature with resumability
+- **Scalability**: Can handle high message volumes
+- **Low overhead**: Minimal impact on the RocketChat application
+
+### Alternatives Considered
+- **Polling-based approach**: Higher latency and resource usage
+- **Application plugin**: Would require modifying RocketChat
+- **Message queue integration**: More complex architecture
+- **Webhook-based approach**: Would require RocketChat configuration changes
+
+### Consequences
+- Positive: Real-time message processing
+- Positive: No modifications to RocketChat required
+- Positive: Efficient resource usage
+- Negative: Additional service to maintain
+- Negative: Requires MongoDB expertise
+
+### References
+- [Serverless Requirements](discussions/2025.03.25.02-serverless-functions/02.0-serverless-functions-requirements.md)
+- [Serverless Recommendations](discussions/2025.03.25.02-serverless-functions/02.1-serverless-functions-recommendations.md)
+- [Implementation Details](discussions/2025.03.25.02-serverless-functions/02.4-serverless-functions-implementation.md)
+
+---
+
+## 15. LLM Query Processing: Edge Computing
+
+### Decision
+Use Cloudflare Workers for LLM query processing from RocketChat.
+
+### Date
+2025-03-25
+
+### Context
+We needed a solution to process natural language queries from RocketChat, retrieve relevant context, and generate responses using Groq LLM.
+
+### Rationale
+- **Low latency**: Edge computing reduces response time
+- **Scalability**: Automatically scales with query volume
+- **Cost efficiency**: Pay only for actual usage
+- **Global distribution**: Processes queries close to users
+- **Webhook integration**: Easy integration with RocketChat
+
+### Alternatives Considered
+- **Self-hosted service**: Would require additional infrastructure
+- **Cloud Functions**: Higher latency than edge computing
+- **Direct LLM integration**: Would require RocketChat modifications
+- **Third-party chatbot platforms**: Less customizable for our specific needs
+
+### Consequences
+- Positive: Fast response times
+- Positive: Seamless integration with RocketChat
+- Positive: Scalable with usage
+- Negative: Limited execution time for complex queries
+- Negative: Dependency on Cloudflare
+
+### References
+- [Serverless Requirements](discussions/2025.03.25.02-serverless-functions/02.0-serverless-functions-requirements.md)
+- [Serverless Recommendations](discussions/2025.03.25.02-serverless-functions/02.1-serverless-functions-recommendations.md)
+- [Implementation Details](discussions/2025.03.25.02-serverless-functions/02.4-serverless-functions-implementation.md)
+
+---
+
+## 16. Event-Driven Architecture: Pub/Sub
+
+### Decision
+Use Google Pub/Sub for event-driven communication between services.
+
+### Date
+2025-03-25
+
+### Context
+We needed a reliable messaging system for communication between different components of our architecture.
+
+### Rationale
+- **Decoupling**: Services can communicate without direct dependencies
+- **Scalability**: Can handle high message volumes
+- **Reliability**: At-least-once delivery guarantees
+- **Managed service**: No infrastructure to maintain
+- **Integration**: Works well with Google Cloud Functions
+
+### Alternatives Considered
+- **RabbitMQ/Kafka**: Would require self-hosting
+- **Redis Pub/Sub**: Less durable message delivery
+- **Direct API calls**: Tighter coupling between services
+- **Webhook-based communication**: More complex to implement reliably
+
+### Consequences
+- Positive: Loose coupling between services
+- Positive: Reliable message delivery
+- Positive: Scalable with usage
+- Negative: Additional GCP service dependency
+- Negative: Potential message duplication to handle
+
+### References
+- [Serverless Recommendations](discussions/2025.03.25.02-serverless-functions/02.1-serverless-functions-recommendations.md)
+- [Implementation Details](discussions/2025.03.25.02-serverless-functions/02.4-serverless-functions-implementation.md)
