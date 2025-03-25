@@ -1,4 +1,4 @@
-# Architectural Decision Record
+# Architectural Decisions Record
 
 This document logs the key architectural decisions made during the design of our multi-cloud infrastructure, including the rationale behind each choice and alternatives considered.
 

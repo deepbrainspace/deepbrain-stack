@@ -26,6 +26,24 @@ This document outlines the architecture for a high-availability, multi-cloud inf
 - SeaweedFS for distributed storage
 - Traefik for routing and load balancing
 
+### 5. Serverless Functions
+- **Google Cloud Functions** for backup automation and data processing
+- **Cloudflare Workers** for API integrations and LLM query processing
+- **Google Cloud Scheduler** for reliable function triggering
+- **Google Pub/Sub** for event-driven architecture
+
+### 6. External API Integrations
+- **Aircall API** for communication system integration
+- **Guesty API** for property management integration
+- **Webhook-based** real-time data synchronization
+- **Vector representation** of all business data
+
+### 7. AI and LLM Integration
+- **Qdrant Vector Database** for semantic search capabilities
+- **Groq Cloud** for fast LLM inference
+- **RocketChat integration** for natural language queries
+- **Automated vectorization** of messages and business data
+
 ## System Architecture
 
 ```mermaid
@@ -149,10 +167,14 @@ Located in `/opt/apps/<name>`:
 - **Sync App**: Custom synchronization application
 - All applications use SeaweedFS volumes with 2x replication
 
-### Backup Server
-- Dedicated server for mounting SeaweedFS volumes
-- Backs up to Cloudflare R2 using restic
-- Retention policy: 7 daily, 4 weekly, 12 monthly backups
+### Backup Automation
+
+- **Serverless approach** using Google Cloud Function and Cloud Scheduler
+- **Custom snapshot** with pre-installed backup tools
+- **Temporary server** created for each backup operation
+- **Self-destruction** after backup completion
+- **Retention policy**: 7 daily, 4 weekly, 12 monthly backups
+- **Monitoring integration** with status updates in Firestore
 
 ### Network Security
 - Private network for internal communication
@@ -163,14 +185,22 @@ Located in `/opt/apps/<name>`:
 
 - **R2 Storage**: For backup storage
 - **DNS**: For domain management
-- **Workers**: For edge computing functions
+- **Workers**: 
+  - API webhook processing (Aircall, Guesty)
+  - LLM query processing
+  - Edge computing functions
 - **Proxy**: For DDoS protection and caching
 
 ## GCP Integration
 
-- **Firestore**: Database for applications
-- **Cloud Functions**: Serverless functions for specific tasks
+- **Firestore**: Database for applications and backup status
+- **Cloud Functions**: 
+  - Backup automation
+  - Data vectorization
+  - Message processing
 - **Cloud Run**: Container-based serverless platform
+- **Cloud Scheduler**: Reliable scheduling for automated tasks
+- **Pub/Sub**: Event-driven messaging for real-time processing
 
 ## Vercel Integration
 
@@ -181,6 +211,8 @@ Located in `/opt/apps/<name>`:
 
 - **Qdrant Cloud**: Vector database for AI applications
 - **Groq Cloud**: AI inference platform
+- **Aircall API**: Communication system integration
+- **Guesty API**: Property management system integration
 
 ## Repository Structure
 
@@ -191,7 +223,11 @@ infrastructure/
 │   │   ├── hetzner-swarm/
 │   │   ├── hetzner-network/
 │   │   ├── cloudflare/
-│   │   └── gcp/
+│   │   ├── gcp/
+│   │   │   ├── functions/
+│   │   │   ├── scheduler/
+│   │   │   └── pubsub/
+│   │   └── qdrant/
 │   ├── environments/
 │       ├── dev/
 │       ├── staging/
@@ -200,7 +236,8 @@ infrastructure/
 │   ├── playbooks/
 │   │   ├── setup-servers.yml
 │   │   ├── deploy-core.yml
-│   │   └── deploy-apps.yml
+│   │   ├── deploy-apps.yml
+│   │   └── create-backup-snapshot.yml
 │   ├── inventory/
 │   │   ├── dev
 │   │   ├── staging
@@ -215,7 +252,8 @@ infrastructure/
 │   │   └── apps/
 │   │       ├── rocketchat/
 │   │       ├── keycloak/
-│   │       └── sync-app/
+│   │       ├── sync-app/
+│   │       └── mongo-listener/
 │   └── group_vars/
 │       ├── all/
 │       │   └── common.yml
@@ -228,10 +266,29 @@ infrastructure/
 │       │   └── (similar structure)
 │       └── prod/
 │           └── (similar structure)
+├── functions/
+│   ├── gcp/
+│   │   ├── backup/
+│   │   │   ├── index.js
+│   │   │   └── package.json
+│   │   └── vectorize/
+│   │       ├── index.js
+│   │       └── package.json
+│   └── cloudflare/
+│       ├── aircall-webhook/
+│       │   ├── index.js
+│       │   └── wrangler.toml
+│       ├── guesty-webhook/
+│       │   ├── index.js
+│       │   └── wrangler.toml
+│       └── llm-query/
+│           ├── index.js
+│           └── wrangler.toml
 ├── .github/
 │   └── workflows/
 │       ├── pr-validation.yml
 │       ├── deploy.yml
+│       ├── deploy-functions.yml
 │       └── backup-verify.yml
 ├── scripts/
 │   ├── validate-ansible.sh
@@ -614,6 +671,67 @@ flowchart TD
    - Verification of backup success
    - Restore testing
    - Alerts for backup failures
+
+4. **Serverless Function Monitoring**:
+   - Cloud Function logs for debugging and auditing
+   - Cloudflare Worker analytics for performance monitoring
+   - Backup status tracking in Firestore
+   - Webhook processing metrics for API integrations
+
+5. **AI System Monitoring**:
+   - Vector database metrics for query performance
+   - LLM response times and usage tracking
+   - Query success rates and error monitoring
+   - User satisfaction metrics based on feedback
+
+## Serverless Functions Architecture
+
+### 1. Backup Automation
+
+The backup process has been redesigned to use a serverless approach:
+
+- **Google Cloud Scheduler** triggers a Cloud Function daily
+- **Backup Cloud Function** creates a server from a pre-configured snapshot
+- **Backup Server** automatically mounts volumes, performs backups, and self-destructs
+- **Status updates** are sent to Firestore and monitoring systems
+- **Retention policies** (7 daily, 4 weekly, 12 monthly) are applied automatically
+
+This approach eliminates the need for a permanent backup server, reducing costs while maintaining robust backup capabilities.
+
+### 2. API Integration Functions
+
+External APIs are integrated using webhook-based Cloudflare Workers:
+
+- **Aircall Webhook Worker** receives real-time updates from the Aircall API
+- **Guesty Webhook Worker** receives real-time updates from the Guesty API
+- **Data transformation** occurs at the edge for optimal performance
+- **Firestore database** stores the normalized data
+- **Vectorize Function** creates vector representations for AI queries
+
+This architecture provides real-time data synchronization without polling, reducing latency and resource usage.
+
+### 3. RocketChat Message Vectorization
+
+RocketChat messages are automatically vectorized for AI queries:
+
+- **MongoDB Change Stream Listener** monitors for new messages
+- **Google Pub/Sub** receives message events
+- **Vectorize Function** creates vector representations
+- **Qdrant Vector Database** stores the vectors for semantic search
+
+This approach ensures that all communication is searchable and can be referenced by the LLM system.
+
+### 4. LLM Query Processing
+
+Natural language queries in RocketChat are processed by:
+
+- **LLM Query Cloudflare Worker** receives webhook events from RocketChat
+- **Qdrant Vector Database** provides relevant context
+- **Groq LLM API** generates responses based on context
+- **Response formatting** ensures clear presentation in RocketChat
+- **Query and response storage** maintains a history for future reference
+
+This system allows users to query business data using natural language, improving efficiency and accessibility.
 
 ## Next Steps
 
