@@ -6,10 +6,10 @@ This document logs the key architectural decisions made during the design of our
 
 | Date       | Decision                                      | Reference                                                |
 |------------|-----------------------------------------------|----------------------------------------------------------|
-| 2023-11-15 | Initial infrastructure requirements defined   | [Initial Requirements](discussions/01.0-ideation-prompt.md) |
-| 2023-11-16 | First architecture proposal (Claude)          | [Claude Proposal](discussions/01.1.ideation-claude37response.md) |
-| 2023-11-17 | Refined architecture proposal (Grok)          | [Grok Proposal](discussions/01.2-ideation-grok3response.md) |
-| 2023-11-18 | Final architecture decisions documented       | This document                                            |
+| 2025-03-25 | Initial infrastructure requirements defined   | [Initial Requirements](discussions/01.0-ideation-prompt.md) |
+| 2025-03-25 | First architecture proposal (Claude)          | [Claude Proposal](discussions/01.1.ideation-claude37response.md) |
+| 2025-03-25 | Refined architecture proposal (Grok)          | [Grok Proposal](discussions/01.2-ideation-grok3response.md) |
+| 2025-03-25 | Final architecture decisions documented       | This document                                            |
 
 ## Table of Contents
 
@@ -34,7 +34,7 @@ This document logs the key architectural decisions made during the design of our
 Use Docker Swarm for container orchestration instead of Kubernetes.
 
 ### Date
-2023-11-15
+2025-03-20
 
 ### Context
 We needed a container orchestration platform that provides high availability while remaining manageable for a small team.
@@ -67,7 +67,7 @@ We needed a container orchestration platform that provides high availability whi
 Use Ansible for server configuration and application deployment.
 
 ### Date
-2023-11-16
+2025-03-22
 
 ### Context
 We needed a tool to automate server setup and application deployment across multiple environments.
