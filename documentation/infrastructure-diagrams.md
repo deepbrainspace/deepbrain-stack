@@ -6,25 +6,26 @@
 graph TD
     %% Arrange in a more balanced horizontal layout
     
-    %% Left side - External Services and Vercel
-    subgraph "External Services"
-        Aircall["Aircall API"]
-        Guesty["Guesty API"]
-    end
-    
+    %% Top - Vercel and KV Store
     subgraph "Vercel"
         Vercel_SecretsUI["Secrets UI"]
     end
-
-    %% Middle left - Cloudflare
+    
+    %% KV Store moved near Vercel at the top
     subgraph "Cloudflare"
+        CF_KV["KV Store"]
         CF_DNS["DNS"]
         CF_R2["R2 Storage"]
-        CF_KV["KV Store"]
         CF_Workers["Workers"]
         CF_AircallWorker["Aircall Webhook Worker"]
         CF_GuestyWorker["Guesty Webhook Worker"]
         CF_LLMWorker["LLM Query Worker"]
+    end
+    
+    %% Left side - External Services
+    subgraph "External Services"
+        Aircall["Aircall API"]
+        Guesty["Guesty API"]
     end
     
     %% Center - Hetzner Cloud with Firewall wrapper
@@ -57,7 +58,7 @@ graph TD
         end
     end
     
-    %% Right side - GCP, Qdrant and Groq
+    %% Right side - GCP positioned to avoid overlap with Cloudflare
     subgraph "GCP"
         GCP_Firestore["Firestore"]
         GCP_Scheduler["Cloud Scheduler"]
@@ -65,6 +66,7 @@ graph TD
         GCP_VectorizeFunction["Vectorize Function"]
     end
 
+    %% Far right - AI Services
     subgraph "AI Services"
         subgraph "Qdrant Cloud"
             Qdrant["Vector DB"]
