@@ -21,31 +21,31 @@ graph TD
     end
 
     subgraph "Hetzner Cloud"
-        %% Firewall on the left
-        HZ_Firewall["Firewall"]
-        
-        subgraph "HZ_Network"
-            subgraph "Docker Swarm Cluster"
-                DS_Node1["Node 1<br/>Manager + Worker"]
-                DS_Node2["Node 2<br/>Manager + Worker"]
-                DS_Node3["Node 3<br/>Manager + Worker"]
-                
-                subgraph "Core Services"
-                    Core_Traefik["Traefik"]
-                    Core_SeaweedFS["SeaweedFS"]
-                    Core_Netdata["Netdata"]
-                end
-                
-                subgraph "Applications"
-                    subgraph "RocketChat"
-                        App_RocketChat["RocketChat"]
-                        App_MongoDB["MongoDB"]
+        %% Wrap the entire network in a Firewall subgraph
+        subgraph "HZ_Firewall_Zone" [Firewall]
+            subgraph "HZ_Network"
+                subgraph "Docker Swarm Cluster"
+                    DS_Node1["Node 1<br/>Manager + Worker"]
+                    DS_Node2["Node 2<br/>Manager + Worker"]
+                    DS_Node3["Node 3<br/>Manager + Worker"]
+                    
+                    subgraph "Core Services"
+                        Core_Traefik["Traefik"]
+                        Core_SeaweedFS["SeaweedFS"]
+                        Core_Netdata["Netdata"]
                     end
-                    App_Keycloak["Keycloak"]
+                    
+                    subgraph "Applications"
+                        subgraph "RocketChat"
+                            App_RocketChat["RocketChat"]
+                            App_MongoDB["MongoDB"]
+                        end
+                        App_Keycloak["Keycloak"]
+                    end
                 end
+                
+                HZ_BackupSnapshot["Backup Server Snapshot"]
             end
-            
-            HZ_BackupSnapshot["Backup Server Snapshot"]
         end
     end
 
@@ -72,9 +72,9 @@ graph TD
     end
 
     %% Network connections (solid lines)
-    CF_DNS -->|"DNS Resolution"| HZ_Firewall
-    CF_Workers -->|"API Requests"| HZ_Firewall
-    Core_Traefik -->|"Ingress"| HZ_Firewall
+    CF_DNS -->|"DNS Resolution"| HZ_Firewall_Zone
+    CF_Workers -->|"API Requests"| HZ_Firewall_Zone
+    Core_Traefik -->|"Ingress"| HZ_Firewall_Zone
     
     %% Swarm node connections (dashed lines)
     DS_Node1 -.->|"Swarm Traffic"| DS_Node2
@@ -99,9 +99,8 @@ graph TD
     Core_SeaweedFS -.->|"Storage"| App_Keycloak
     App_Keycloak -.->|"Storage"| Core_SeaweedFS
     
-    %% Backup connections - now going through firewall
-    GCP_BackupFunction -->|"Create"| HZ_Firewall
-    HZ_Firewall -->|"Access"| HZ_BackupSnapshot
+    %% Backup connections - now going through firewall zone
+    GCP_BackupFunction -->|"Create"| HZ_Firewall_Zone
     HZ_BackupSnapshot -->|"Store"| CF_R2
     GCP_Scheduler -->|"Trigger"| GCP_BackupFunction
     
@@ -134,6 +133,7 @@ graph TD
     
     classDef cloudflare fill:#F6821F,color:white;
     classDef hetzner fill:#D50C2D,color:white;
+    classDef firewall fill:#D50C2D,color:white,stroke-width:4px;
     classDef gcp fill:#4285F4,color:white;
     classDef vercel fill:#000000,color:white;
     classDef external fill:#666666,color:white;
@@ -146,7 +146,8 @@ graph TD
     
     %% Apply styles to nodes
     class CF_DNS,CF_R2,CF_KV,CF_Workers,CF_AircallWorker,CF_GuestyWorker,CF_LLMWorker cloudflare;
-    class DS_Node1,DS_Node2,DS_Node3,HZ_BackupSnapshot,HZ_Firewall hetzner;
+    class DS_Node1,DS_Node2,DS_Node3,HZ_BackupSnapshot hetzner;
+    class HZ_Firewall_Zone firewall;
     class Core_SeaweedFS,Core_Traefik,Core_Netdata core;
     class App_RocketChat,App_MongoDB,App_Keycloak apps;
     class GCP_Firestore,GCP_Scheduler,GCP_BackupFunction,GCP_VectorizeFunction gcp;
