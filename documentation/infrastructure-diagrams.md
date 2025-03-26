@@ -54,11 +54,18 @@ graph TD
         Vercel_SecretsUI["Secrets UI"]
     end
 
-    subgraph "External Services"
-        Qdrant["Qdrant Cloud\nVector DB"]
-        Groq["Groq Cloud\nInference"]
-        Aircall["Aircall API"]
-        Guesty["Guesty API"]
+    subgraph "Groq Cloud"
+        Groq["Deepseek-Qwen-32b<br/>Inference"]
+    end
+
+    subgraph "Qdrant Cloud"
+        Qdrant["Qdrant Cloud<br/>Vector DB"]
+    end
+    subgraph "AirCall"
+        Aircall["API"]
+    end
+    subgraph "Guesty"
+        Guesty["API"]
     end
 
     %% Connections
