@@ -126,7 +126,7 @@ graph TD
     class CF_DNS,CF_R2,CF_Workers,CF_AircallWorker,CF_GuestyWorker,CF_LLMWorker cloudflare;
     class DS_Node1,DS_Node2,DS_Node3,HZ_BackupSnapshot,HZ_Firewall hetzner;
     class Core_SeaweedFS,Core_Traefik,Core_Netdata core;
-    class App_RocketChat,App_MongoDB,App_Keycloak;
+    class App_RocketChat,App_MongoDB,App_Keycloak apps;
     class GCP_Firestore,GCP_Scheduler,GCP_BackupFunction,GCP_VectorizeFunction gcp;
     class Vercel_SecretsUI vercel;
     class Qdrant qdrant;
