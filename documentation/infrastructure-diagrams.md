@@ -133,41 +133,41 @@ graph TB
 
 ```mermaid
 flowchart TD
-    A["Developer\nCommits Changes"] -->|Push to Branch| B["Create Pull Request"]
-    B --> C{"GitHub Actions\nPR Validation"}
-    C -->|Run Ansible Check Mode| D["Generate Diff"]
-    C -->|Validate Functions| E["Test Functions Locally"]
-    D --> F["Post Diff to PR"]
-    E --> F
-    F --> G{"PR Review"}
-    G -->|Approved| H["Merge PR"]
-    G -->|Changes Requested| I["Update PR"]
-    I --> C
-    H --> J{"GitHub Actions\nDeployment"}
-    J -->|Run Terraform| K["Provision/Update\nInfrastructure"]
-    K --> L["Run Ansible\nPlaybooks"]
-    L --> M["Deploy Serverless Functions"]
-    M --> N{"Deployment\nSuccessful?"}
-    N -->|Yes| O["Verify Services"]
-    N -->|No| P["Automatic Rollback"]
-    P --> Q["Create Issue\nfor Failed Deployment"]
-    O -->|All Healthy| R["Deployment Complete"]
-    O -->|Issues Detected| S["Manual Intervention"]
-    S --> T["Fix Issues"]
-    T --> U["Update Repository"]
-    U --> A
+    A["Developer\nCommits Changes"] -->|1. Push to Branch| B["Create Pull Request"]
+    B --> |2. Trigger CI| C{"GitHub Actions\nPR Validation"}
+    C -->|3a. Run Ansible Check Mode| D["Generate Diff"]
+    C -->|3b. Validate Functions| E["Test Functions Locally"]
+    D --> |4a. Add Results| F["Post Diff to PR"]
+    E --> |4b. Add Results| F
+    F --> |5. Review| G{"PR Review"}
+    G -->|6a. Approved| H["Merge PR"]
+    G -->|6b. Changes Requested| I["Update PR"]
+    I --> |7. Re-trigger CI| C
+    H --> |8. Trigger CD| J{"GitHub Actions\nDeployment"}
+    J -->|9. Run Terraform| K["Provision/Update\nInfrastructure"]
+    K --> |10. Configure| L["Run Ansible\nPlaybooks"]
+    L --> |11. Deploy| M["Deploy Serverless Functions"]
+    M --> |12. Check| N{"Deployment\nSuccessful?"}
+    N -->|13a. Yes| O["Verify Services"]
+    N -->|13b. No| P["Automatic Rollback"]
+    P --> |14. Report| Q["Create Issue\nfor Failed Deployment"]
+    O -->|15a. All Healthy| R["Deployment Complete"]
+    O -->|15b. Issues Detected| S["Manual Intervention"]
+    S --> |16. Fix| T["Fix Issues"]
+    T --> |17. Commit| U["Update Repository"]
+    U --> |18. Restart Process| A
 ```
 
 ## Configuration Management Flow
 
 ```mermaid
 flowchart TD
-    A["Git Repository"] --> B{"git-crypt"}
-    B -->|Encrypt| C["Encrypted Secrets"]
-    B -->|Decrypt| D["Decrypted Secrets"]
+    A["Git Repository"] --> |1a. Secure| B{"git-crypt"}
+    B -->|2a. Encrypt| C["Encrypted Secrets"]
+    B -->|2b. Decrypt| D["Decrypted Secrets"]
     
-    A --> E["Ansible Templates"]
-    A --> F["Environment Variables"]
+    A --> |1b. Store| E["Ansible Templates"]
+    A --> |1c. Define| F["Environment Variables"]
     
     subgraph "GitHub Actions"
         G["Checkout Code"]
@@ -176,18 +176,18 @@ flowchart TD
         J["Deploy to Swarm"]
     end
     
-    G --> H
-    H --> I
-    I --> J
+    G --> |3. Get| H
+    H --> |4. Provide| I
+    I --> |5. Execute| J
     
-    D --> H
-    E --> I
-    F --> I
+    D --> |6. Use| H
+    E --> |7a. Use| I
+    F --> |7b. Use| I
     
-    J --> K["Docker Swarm"]
+    J --> |8. Configure| K["Docker Swarm"]
     
-    K --> L["Core Services"]
-    K --> M["Applications"]
+    K --> |9a. Start| L["Core Services"]
+    K --> |9b. Start| M["Applications"]
     
     classDef git fill:#F05033,color:white;
     classDef actions fill:#2088FF,color:white;
@@ -202,24 +202,24 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    A["Google Cloud Scheduler"] -->|Daily Trigger| B["Backup Cloud Function"]
-    B --> C["Create Server from Snapshot"]
-    C --> D["Server Boots with Ansible Configuration"]
+    A["Google Cloud Scheduler"] -->|1. Daily Trigger| B["Backup Cloud Function"]
+    B --> |2. Provision| C["Create Server from Snapshot"]
+    C --> |3. Initialize| D["Server Boots with Ansible Configuration"]
     
-    D --> E["Restic Runs Backup Based on Configuration"]
-    E --> F["Upload to Cloudflare R2"]
+    D --> |4. Execute| E["Restic Runs Backup Based on Configuration"]
+    E --> |5. Store| F["Upload to Cloudflare R2"]
     
-    F --> G["Apply Retention Policy"]
-    G -->|Daily| H["Keep 7 Days"]
-    G -->|Weekly| I["Keep 4 Weeks"]
-    G -->|Monthly| J["Keep 12 Months"]
+    F --> |6. Manage| G["Apply Retention Policy"]
+    G -->|7a. Daily| H["Keep 7 Days"]
+    G -->|7b. Weekly| I["Keep 4 Weeks"]
+    G -->|7c. Monthly| J["Keep 12 Months"]
     
-    E --> K["Update Status in Firestore"]
-    K --> L["Self-Destruct Server"]
+    E --> |8. Record| K["Update Status in Firestore"]
+    K --> |9. Cleanup| L["Self-Destruct Server"]
     
-    M["Monitoring Checks Status"] --> N{"Backup Successful?"}
-    N -->|Yes| O["Log Success"]
-    N -->|No| P["Alert Team"]
+    M["Monitoring Checks Status"] --> |10. Verify| N{"Backup Successful?"}
+    N -->|11a. Yes| O["Log Success"]
+    N -->|11b. No| P["Alert Team"]
     
     classDef gcp fill:#4285F4,color:white;
     classDef hetzner fill:#D50C2D,color:white;
@@ -239,18 +239,18 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    A["Developer"] -->|GPG Key| B["git-crypt"]
-    B -->|Encrypt| C["Encrypted Secrets\nin Repository"]
+    A["Developer"] -->|1. Authenticate with GPG Key| B["git-crypt"]
+    B -->|2. Encrypt| C["Encrypted Secrets\nin Repository"]
     
-    D["GitHub Actions"] -->|Symmetric Key| E["git-crypt unlock"]
-    E --> F["Decrypted Secrets"]
+    D["GitHub Actions"] -->|3. Provide Symmetric Key| E["git-crypt unlock"]
+    E --> |4. Decrypt| F["Decrypted Secrets"]
     
-    F --> G["Docker Secrets"]
-    G --> H["Docker Swarm Services"]
+    F --> |5. Create| G["Docker Secrets"]
+    G --> |6. Inject into| H["Docker Swarm Services"]
     
-    I["Vercel Secrets UI"] --> J["View/Edit Secrets"]
-    J --> K["Update Repository"]
-    K --> B
+    I["Vercel Secrets UI"] --> |7. Access| J["View/Edit Secrets"]
+    J --> |8. Commit Changes| K["Update Repository"]
+    K --> |9. Re-encrypt| B
     
     classDef user fill:#1976D2,color:white;
     classDef crypto fill:#FFC107,color:white;
@@ -267,14 +267,14 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    A1["Aircall API"] -->|Webhook Event| B1["Aircall Cloudflare Worker"]
-    A2["Guesty API"] -->|Webhook Event| B2["Guesty Cloudflare Worker"]
+    A1["Aircall API"] -->|1a. Send Webhook Event| B1["Aircall Cloudflare Worker"]
+    A2["Guesty API"] -->|1b. Send Webhook Event| B2["Guesty Cloudflare Worker"]
     
-    B1 -->|Validate & Transform| C["Firestore Database"]
-    B2 -->|Validate & Transform| C
+    B1 -->|2a. Validate & Transform| C["Firestore Database"]
+    B2 -->|2b. Validate & Transform| C
     
-    C -->|Document Write Trigger| D["Vectorize Cloud Function"]
-    D -->|Create Vector Representation| E["Qdrant Vector Database"]
+    C -->|3. Trigger on Document Write| D["Vectorize Cloud Function"]
+    D -->|4. Create Vector Representation| E["Qdrant Vector Database"]
     
     classDef external fill:#666666,color:white;
     classDef cloudflare fill:#F6821F,color:white;
@@ -293,21 +293,21 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    A["RocketChat User"] -->|Ask Question| B["RocketChat"]
-    B -->|Webhook| C["LLM Query Cloudflare Worker"]
+    A["RocketChat User"] -->|1. Ask Question| B["RocketChat"]
+    B -->|2. Send Webhook| C["LLM Query Cloudflare Worker"]
     
-    C -->|Query for Context| D["Qdrant Vector Database"]
-    D -->|Return Relevant Context| C
+    C -->|3. Query for Context| D["Qdrant Vector Database"]
+    D -->|4. Return Relevant Context| C
     
-    C -->|Query with Context| E["Groq LLM API"]
-    E -->|Return Response| C
+    C -->|5. Query with Context| E["Groq LLM API"]
+    E -->|6. Return Response| C
     
-    C -->|Format Response| B
-    B -->|Display Answer| A
+    C -->|7. Format Response| B
+    B -->|8. Display Answer| A
     
-    C -->|Store Q&A| F["Firestore"]
-    F -->|Trigger| G["Vectorize Function"]
-    G -->|Update Vector DB| D
+    C -->|9. Store Q&A| F["Firestore"]
+    F -->|10. Trigger Function| G["Vectorize Function"]
+    G -->|11. Update Vector DB| D
     
     classDef user fill:#1976D2,color:white;
     classDef app fill:#2496ED,color:white;
