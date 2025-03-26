@@ -16,7 +16,7 @@ graph TB
     subgraph "Hetzner Cloud"
         HZ_Firewall["Firewall"]
         
-        subgraph "Private Network"
+        subgraph "HZ_Network"
             subgraph "Docker Swarm Cluster"
                 DS_Node1["Node 1\nManager + Worker"]
                 DS_Node2["Node 2\nManager + Worker"]
@@ -126,35 +126,35 @@ graph TB
     class GCP_Firestore,GCP_Functions,GCP_CloudRun,GCP_Scheduler,GCP_BackupFunction,GCP_VectorizeFunction,GCP_PubSub gcp;
     class Vercel_SecretsUI vercel;
     class Qdrant,Groq,Aircall,Guesty external;
-    class "Private Network" network;
+    class HZ_Network network;
 ```
 
 ## Deployment Process Flow
 
 ```mermaid
 flowchart TD
-    A[Developer\nCommits Changes] -->|Push to Branch| B[Create Pull Request]
-    B --> C{GitHub Actions\nPR Validation}
-    C -->|Run Ansible Check Mode| D[Generate Diff]
-    C -->|Validate Functions| E[Test Functions Locally]
-    D --> F[Post Diff to PR]
+    A["Developer\nCommits Changes"] -->|Push to Branch| B["Create Pull Request"]
+    B --> C{"GitHub Actions\nPR Validation"}
+    C -->|Run Ansible Check Mode| D["Generate Diff"]
+    C -->|Validate Functions| E["Test Functions Locally"]
+    D --> F["Post Diff to PR"]
     E --> F
-    F --> G{PR Review}
-    G -->|Approved| H[Merge PR]
-    G -->|Changes Requested| I[Update PR]
+    F --> G{"PR Review"}
+    G -->|Approved| H["Merge PR"]
+    G -->|Changes Requested| I["Update PR"]
     I --> C
-    H --> J{GitHub Actions\nDeployment}
-    J -->|Run Terraform| K[Provision/Update\nInfrastructure]
-    K --> L[Run Ansible\nPlaybooks]
-    L --> M[Deploy Serverless Functions]
-    M --> N{Deployment\nSuccessful?}
-    N -->|Yes| O[Verify Services]
-    N -->|No| P[Automatic Rollback]
-    P --> Q[Create Issue\nfor Failed Deployment]
-    O -->|All Healthy| R[Deployment Complete]
-    O -->|Issues Detected| S[Manual Intervention]
-    S --> T[Fix Issues]
-    T --> U[Update Repository]
+    H --> J{"GitHub Actions\nDeployment"}
+    J -->|Run Terraform| K["Provision/Update\nInfrastructure"]
+    K --> L["Run Ansible\nPlaybooks"]
+    L --> M["Deploy Serverless Functions"]
+    M --> N{"Deployment\nSuccessful?"}
+    N -->|Yes| O["Verify Services"]
+    N -->|No| P["Automatic Rollback"]
+    P --> Q["Create Issue\nfor Failed Deployment"]
+    O -->|All Healthy| R["Deployment Complete"]
+    O -->|Issues Detected| S["Manual Intervention"]
+    S --> T["Fix Issues"]
+    T --> U["Update Repository"]
     U --> A
 ```
 
@@ -162,18 +162,18 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    A[Git Repository] --> B{git-crypt}
-    B -->|Encrypt| C[Encrypted Secrets]
-    B -->|Decrypt| D[Decrypted Secrets]
+    A["Git Repository"] --> B{"git-crypt"}
+    B -->|Encrypt| C["Encrypted Secrets"]
+    B -->|Decrypt| D["Decrypted Secrets"]
     
-    A --> E[Ansible Templates]
-    A --> F[Environment Variables]
+    A --> E["Ansible Templates"]
+    A --> F["Environment Variables"]
     
     subgraph "GitHub Actions"
-        G[Checkout Code]
-        H[Decrypt Secrets]
-        I[Process Templates]
-        J[Deploy to Swarm]
+        G["Checkout Code"]
+        H["Decrypt Secrets"]
+        I["Process Templates"]
+        J["Deploy to Swarm"]
     end
     
     G --> H
@@ -184,10 +184,10 @@ flowchart TD
     E --> I
     F --> I
     
-    J --> K[Docker Swarm]
+    J --> K["Docker Swarm"]
     
-    K --> L[Core Services]
-    K --> M[Applications]
+    K --> L["Core Services"]
+    K --> M["Applications"]
     
     classDef git fill:#F05033,color:white;
     classDef actions fill:#2088FF,color:white;
@@ -202,24 +202,24 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    A[1. Google Cloud Scheduler] -->|Daily Trigger| B[2. Backup Cloud Function]
-    B --> C[3. Create Server from Snapshot]
-    C --> D[4. Server Boots with Ansible Configuration]
+    A["Google Cloud Scheduler"] -->|Daily Trigger| B["Backup Cloud Function"]
+    B --> C["Create Server from Snapshot"]
+    C --> D["Server Boots with Ansible Configuration"]
     
-    D --> E[5. Restic Runs Backup Based on Configuration]
-    E --> F[6. Upload to Cloudflare R2]
+    D --> E["Restic Runs Backup Based on Configuration"]
+    E --> F["Upload to Cloudflare R2"]
     
-    F --> G[7. Apply Retention Policy]
-    G -->|Daily| H[Keep 7 Days]
-    G -->|Weekly| I[Keep 4 Weeks]
-    G -->|Monthly| J[Keep 12 Months]
+    F --> G["Apply Retention Policy"]
+    G -->|Daily| H["Keep 7 Days"]
+    G -->|Weekly| I["Keep 4 Weeks"]
+    G -->|Monthly| J["Keep 12 Months"]
     
-    E --> K[8. Update Status in Firestore]
-    K --> L[9. Self-Destruct Server]
+    E --> K["Update Status in Firestore"]
+    K --> L["Self-Destruct Server"]
     
-    M[10. Monitoring Checks Status] --> N{11. Backup Successful?}
-    N -->|Yes| O[Log Success]
-    N -->|No| P[Alert Team]
+    M["Monitoring Checks Status"] --> N{"Backup Successful?"}
+    N -->|Yes| O["Log Success"]
+    N -->|No| P["Alert Team"]
     
     classDef gcp fill:#4285F4,color:white;
     classDef hetzner fill:#D50C2D,color:white;
@@ -239,17 +239,17 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    A[Developer] -->|GPG Key| B[git-crypt]
-    B -->|Encrypt| C[Encrypted Secrets\nin Repository]
+    A["Developer"] -->|GPG Key| B["git-crypt"]
+    B -->|Encrypt| C["Encrypted Secrets\nin Repository"]
     
-    D[GitHub Actions] -->|Symmetric Key| E[git-crypt unlock]
-    E --> F[Decrypted Secrets]
+    D["GitHub Actions"] -->|Symmetric Key| E["git-crypt unlock"]
+    E --> F["Decrypted Secrets"]
     
-    F --> G[Docker Secrets]
-    G --> H[Docker Swarm Services]
+    F --> G["Docker Secrets"]
+    G --> H["Docker Swarm Services"]
     
-    I[Vercel Secrets UI] --> J[View/Edit Secrets]
-    J --> K[Update Repository]
+    I["Vercel Secrets UI"] --> J["View/Edit Secrets"]
+    J --> K["Update Repository"]
     K --> B
     
     classDef user fill:#1976D2,color:white;
@@ -267,14 +267,14 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    A1[1. Aircall API] -->|Webhook Event| B1[2. Aircall Cloudflare Worker]
-    A2[1. Guesty API] -->|Webhook Event| B2[2. Guesty Cloudflare Worker]
+    A1["Aircall API"] -->|Webhook Event| B1["Aircall Cloudflare Worker"]
+    A2["Guesty API"] -->|Webhook Event| B2["Guesty Cloudflare Worker"]
     
-    B1 -->|Validate & Transform| C[3. Firestore Database]
+    B1 -->|Validate & Transform| C["Firestore Database"]
     B2 -->|Validate & Transform| C
     
-    C -->|Document Write Trigger| D[4. Vectorize Cloud Function]
-    D -->|Create Vector Representation| E[5. Qdrant Vector Database]
+    C -->|Document Write Trigger| D["Vectorize Cloud Function"]
+    D -->|Create Vector Representation| E["Qdrant Vector Database"]
     
     classDef external fill:#666666,color:white;
     classDef cloudflare fill:#F6821F,color:white;
@@ -287,47 +287,26 @@ flowchart TD
     class E qdrant;
 ```
 
-## RocketChat Message Vectorization Flow
 
-```mermaid
-flowchart TD
-    A[1. RocketChat] -->|New Message| B[2. MongoDB]
-    B -->|Change Stream| C[3. MongoDB Listener Service]
-    C -->|Message Event| D[4. Google Pub/Sub]
-    D -->|Trigger| E[5. Vectorize Function]
-    E -->|Create Vector| F[6. Qdrant Vector Database]
-    
-    classDef app fill:#2496ED,color:white;
-    classDef db fill:#47A248,color:white;
-    classDef service fill:#4CAF50,color:white;
-    classDef gcp fill:#4285F4,color:white;
-    classDef qdrant fill:#00C4CC,color:white;
-    
-    class A app;
-    class B db;
-    class C service;
-    class D,E gcp;
-    class F qdrant;
-```
 
 ## LLM Query Process Flow
 
 ```mermaid
 flowchart TD
-    A[1. RocketChat User] -->|Ask Question| B[2. RocketChat]
-    B -->|Webhook| C[3. LLM Query Cloudflare Worker]
+    A["RocketChat User"] -->|Ask Question| B["RocketChat"]
+    B -->|Webhook| C["LLM Query Cloudflare Worker"]
     
-    C -->|Query for Context| D[4. Qdrant Vector Database]
+    C -->|Query for Context| D["Qdrant Vector Database"]
     D -->|Return Relevant Context| C
     
-    C -->|Query with Context| E[5. Groq LLM API]
+    C -->|Query with Context| E["Groq LLM API"]
     E -->|Return Response| C
     
     C -->|Format Response| B
     B -->|Display Answer| A
     
-    C -->|Store Q&A| F[6. Firestore]
-    F -->|Trigger| G[7. Vectorize Function]
+    C -->|Store Q&A| F["Firestore"]
+    F -->|Trigger| G["Vectorize Function"]
     G -->|Update Vector DB| D
     
     classDef user fill:#1976D2,color:white;
