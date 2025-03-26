@@ -14,29 +14,32 @@ graph TB
     end
 
     subgraph "Hetzner Cloud"
-        subgraph "Docker Swarm Cluster"
-            DS_Node1["Node 1\nManager + Worker"]
-            DS_Node2["Node 2\nManager + Worker"]
-            DS_Node3["Node 3\nManager + Worker"]
-            
-            subgraph "Core Services"
-                Core_SeaweedFS["SeaweedFS"]
-                Core_Traefik["Traefik"]
-                Core_Netdata["Netdata"]
-            end
-            
-            subgraph "Applications"
-                App_RocketChat["RocketChat"]
-                App_MongoDB["MongoDB"]
-                App_Keycloak["Keycloak"]
-                App_Sync["Sync App"]
-                App_MongoListener["MongoDB Change Stream Listener"]
-            end
-        end
-        
-        HZ_BackupSnapshot["Backup Server Snapshot"]
-        HZ_Network["Private Network"]
         HZ_Firewall["Firewall"]
+        
+        subgraph "Private Network"
+            subgraph "Docker Swarm Cluster"
+                DS_Node1["Node 1\nManager + Worker"]
+                DS_Node2["Node 2\nManager + Worker"]
+                DS_Node3["Node 3\nManager + Worker"]
+                
+                subgraph "Core Services"
+                    Core_SeaweedFS["SeaweedFS"]
+                    Core_Traefik["Traefik"]
+                    Core_Netdata["Netdata"]
+                end
+                
+                subgraph "Applications"
+                    subgraph "RocketChat"
+                        App_RocketChat["RocketChat"]
+                        App_MongoDB["MongoDB"]
+                    end
+                    App_Keycloak["Keycloak"]
+                    App_Sync["Sync App"]
+                end
+            end
+            
+            HZ_BackupSnapshot["Backup Server Snapshot"]
+        end
     end
 
     subgraph "GCP"
@@ -93,11 +96,6 @@ graph TB
     GCP_Firestore --> GCP_VectorizeFunction
     GCP_VectorizeFunction --> Qdrant
     
-    App_MongoDB <--> App_MongoListener
-    App_MongoListener --> GCP_PubSub
-    GCP_PubSub --> GCP_Functions
-    GCP_Functions --> Qdrant
-    
     App_RocketChat --> CF_LLMWorker
     CF_LLMWorker --> Qdrant
     CF_LLMWorker --> Groq
@@ -119,14 +117,16 @@ graph TB
     classDef swarm fill:#2496ED,color:white;
     classDef core fill:#2496ED,color:white,stroke-dasharray: 5 5;
     classDef apps fill:#2496ED,color:white,stroke-dasharray: 5 5;
+    classDef network fill:#009688,color:white;
     
     class CF_DNS,CF_R2,CF_Workers,CF_AircallWorker,CF_GuestyWorker,CF_LLMWorker cloudflare;
-    class DS_Node1,DS_Node2,DS_Node3,HZ_BackupSnapshot,HZ_Network,HZ_Firewall hetzner;
+    class DS_Node1,DS_Node2,DS_Node3,HZ_BackupSnapshot,HZ_Firewall hetzner;
     class Core_SeaweedFS,Core_Traefik,Core_Netdata core;
-    class App_RocketChat,App_MongoDB,App_Keycloak,App_Sync,App_MongoListener apps;
+    class App_RocketChat,App_MongoDB,App_Keycloak,App_Sync apps;
     class GCP_Firestore,GCP_Functions,GCP_CloudRun,GCP_Scheduler,GCP_BackupFunction,GCP_VectorizeFunction,GCP_PubSub gcp;
     class Vercel_SecretsUI vercel;
     class Qdrant,Groq,Aircall,Guesty external;
+    class "Private Network" network;
 ```
 
 ## Deployment Process Flow
@@ -202,24 +202,24 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    A[Google Cloud Scheduler] -->|Daily Trigger| B[Backup Cloud Function]
-    B -->|Determine Backup Type| C{Backup Type}
-    C -->|Daily| D[Create Server from Snapshot]
-    C -->|Weekly| D
-    C -->|Monthly| D
+    A[1. Google Cloud Scheduler] -->|Daily Trigger| B[2. Backup Cloud Function]
+    B --> C[3. Create Server from Snapshot]
+    C --> D[4. Server Boots with Ansible Configuration]
     
-    D --> E[Server Boots and Runs Backup]
-    E -->|Mount SeaweedFS| F[Backup Volumes]
-    F --> G[Upload to Cloudflare R2]
+    D --> E[5. Restic Runs Backup Based on Configuration]
+    E --> F[6. Upload to Cloudflare R2]
     
-    G --> H{Apply Retention Policy}
-    H -->|Daily| I[Keep 7 Days]
-    H -->|Weekly| J[Keep 4 Weeks]
-    H -->|Monthly| K[Keep 12 Months]
+    F --> G[7. Apply Retention Policy]
+    G -->|Daily| H[Keep 7 Days]
+    G -->|Weekly| I[Keep 4 Weeks]
+    G -->|Monthly| J[Keep 12 Months]
     
-    G --> L[Update Status in Firestore]
-    L --> M[Send Notification to Monitoring]
-    M --> N[Server Self-Destructs]
+    E --> K[8. Update Status in Firestore]
+    K --> L[9. Self-Destruct Server]
+    
+    M[10. Monitoring Checks Status] --> N{11. Backup Successful?}
+    N -->|Yes| O[Log Success]
+    N -->|No| P[Alert Team]
     
     classDef gcp fill:#4285F4,color:white;
     classDef hetzner fill:#D50C2D,color:white;
@@ -228,10 +228,11 @@ flowchart TD
     classDef decision fill:#9C27B0,color:white;
     
     class A,B gcp;
-    class D,E,F,N hetzner;
-    class G,H,I,J,K cloudflare;
-    class L,M process;
-    class C decision;
+    class C,D,E,L hetzner;
+    class F,G,H,I,J,O cloudflare;
+    class K,M process;
+    class N decision;
+    class P alert;
 ```
 
 ## Secrets Management Flow
@@ -266,14 +267,14 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    A1[Aircall API] -->|Webhook Event| B1[Aircall Cloudflare Worker]
-    A2[Guesty API] -->|Webhook Event| B2[Guesty Cloudflare Worker]
+    A1[1. Aircall API] -->|Webhook Event| B1[2. Aircall Cloudflare Worker]
+    A2[1. Guesty API] -->|Webhook Event| B2[2. Guesty Cloudflare Worker]
     
-    B1 -->|Validate & Transform| C[Firestore Database]
+    B1 -->|Validate & Transform| C[3. Firestore Database]
     B2 -->|Validate & Transform| C
     
-    C -->|Document Write Trigger| D[Vectorize Cloud Function]
-    D -->|Create Vector Representation| E[Qdrant Vector Database]
+    C -->|Document Write Trigger| D[4. Vectorize Cloud Function]
+    D -->|Create Vector Representation| E[5. Qdrant Vector Database]
     
     classDef external fill:#666666,color:white;
     classDef cloudflare fill:#F6821F,color:white;
@@ -290,11 +291,11 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    A[RocketChat] -->|New Message| B[MongoDB]
-    B -->|Change Stream| C[MongoDB Listener Service]
-    C -->|Message Event| D[Google Pub/Sub]
-    D -->|Trigger| E[Vectorize Function]
-    E -->|Create Vector| F[Qdrant Vector Database]
+    A[1. RocketChat] -->|New Message| B[2. MongoDB]
+    B -->|Change Stream| C[3. MongoDB Listener Service]
+    C -->|Message Event| D[4. Google Pub/Sub]
+    D -->|Trigger| E[5. Vectorize Function]
+    E -->|Create Vector| F[6. Qdrant Vector Database]
     
     classDef app fill:#2496ED,color:white;
     classDef db fill:#47A248,color:white;
@@ -313,20 +314,20 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    A[RocketChat User] -->|Ask Question| B[RocketChat]
-    B -->|Webhook| C[LLM Query Cloudflare Worker]
+    A[1. RocketChat User] -->|Ask Question| B[2. RocketChat]
+    B -->|Webhook| C[3. LLM Query Cloudflare Worker]
     
-    C -->|Query for Context| D[Qdrant Vector Database]
+    C -->|Query for Context| D[4. Qdrant Vector Database]
     D -->|Return Relevant Context| C
     
-    C -->|Query with Context| E[Groq LLM API]
+    C -->|Query with Context| E[5. Groq LLM API]
     E -->|Return Response| C
     
     C -->|Format Response| B
     B -->|Display Answer| A
     
-    C -->|Store Q&A| F[Firestore]
-    F -->|Trigger| G[Vectorize Function]
+    C -->|Store Q&A| F[6. Firestore]
+    F -->|Trigger| G[7. Vectorize Function]
     G -->|Update Vector DB| D
     
     classDef user fill:#1976D2,color:white;
