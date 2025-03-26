@@ -2,33 +2,62 @@
 
 This document outlines the key milestones for implementing the Chatwoot-based communication platform from the ground up.
 
-## Milestone 1: Infrastructure as Code Setup (3-5 days)
+## Milestone 0: Account Setup and Git Repo (1 Hr)
+- Give list of accounts for the client to setup.
+    - Hetzner
+    - GCP
+    - Qdrant
+    - Groq
+    - CloudFlare
+    - Vercel
+- Initialize Git Repo.
 
-### Terraform Configuration
+## Milestone 1: Infrastructure as Code Setup (10 Hours)
+
+### Terraform Configuration (5 Hrs)
+- Setup Terraform Backend on Cloudflare R2 and the relevant providers.
 - Create Terraform modules for Hetzner Cloud resources
+    - Cluster Nodes
+    - Backup Server
+    - Firewall
+    - Private Network
 - Set up Cloudflare DNS and Workers configuration
-- Configure Azure Speech Services resources
+    - Proxy
+    - R2 Backup Buckets
+    - Workers
+- Configure Google Resources
+    - FireStore.
+    - Google Cloud Functions
+    - Google Cloud Scheduler
 - Set up Qdrant Cloud resources
 
-### CI/CD Pipeline Setup
+### CI/CD Pipeline Setup (3 Hrs)
 - Configure GitHub Actions workflows
 - Set up git-crypt for secrets management
 - Create deployment validation steps
 - Configure environment-specific variables
 
-### Cloud Provider Configuration
+### Cloud Provider Configuration (2 hrs)
 - Set up Hetzner Cloud account and API access
 - Configure Cloudflare account and API access
-- Set up Azure account and API access
+- Set up GCP Account and API access
 - Configure R2 storage for backups and audio files
 
-## Milestone 2: Ansible Configuration (2-4 days)
+## Milestone 2: Ansible Configuration (10 hrs)
 
 ### Core Roles Creation
 - Create Docker Swarm configuration roles
-- Develop PostgreSQL configuration role
-- Create Redis configuration role
-- Develop Chatwoot-specific configuration role
+- Restic Backup Roles
+- Create Core Stack Roles
+    - SeaweedFS
+    - Traefik
+    - NetData
+
+### App Roles 
+- Create application-specific roles
+    - KeyCloak
+    - RocketChat
+    - RocketChat MongoDB
 
 ### Deployment Scripts
 - Create initial deployment playbooks
@@ -38,9 +67,8 @@ This document outlines the key milestones for implementing the Chatwoot-based co
 
 ### Security Configuration
 - Set up TLS configuration
-- Configure secure credential storage
+- Configure Cloudflare Edge Proxy
 - Create firewall and security settings
-- Develop PostgreSQL security configuration
 
 ## Milestone 3: Base Ecosystem Setup (3-5 days)
 
@@ -48,13 +76,11 @@ This document outlines the key milestones for implementing the Chatwoot-based co
 - Initialize Docker Swarm cluster
 - Configure manager and worker nodes
 - Set up overlay networks
-- Configure volume management
 
-### Database Setup
-- Deploy PostgreSQL containers
-- Configure Redis containers
-- Set up initial database schema
-- Configure replication and backups
+### Core Systems
+- SeaweedFS Configuration
+- Traefik
+- NetData
 
 ### Monitoring Setup
 - Deploy Netdata for monitoring
@@ -62,19 +88,9 @@ This document outlines the key milestones for implementing the Chatwoot-based co
 - Set up dashboards
 - Create health check endpoints
 
-## Milestone 4: Chatwoot Deployment (3-5 days)
 
-### Core Deployment
-- Deploy Chatwoot application containers
-- Configure environment variables
-- Set up initial admin account
-- Configure Traefik for routing
+## Milestone 4: Apps Deployment (10 Hrs)
 
-### Basic Configuration
-- Set up initial inboxes and teams
-- Configure notification settings
-- Implement branding and customization
-- Create test accounts
 
 ### Authentication Setup
 - Configure Keycloak deployment
@@ -82,13 +98,26 @@ This document outlines the key milestones for implementing the Chatwoot-based co
 - Configure SSO integration
 - Test authentication flow
 
-## Milestone 5: AI Integration (4-6 days)
+### RocketChat Deployment
+- Deploy RocketChat application containers
+- Configure environment variables
+- Set up initial admin account
+- integrate with KeyCloak
+- Configure MongoDB
+- Test HA
+
+### Basic Configuration
+- Set up initial channels and teams
+- Configure notification settings
+- Implement branding and customization
+- Create test accounts
+
+## Milestone 5: AI Integration (10 Hrs)
 
 ### Cloudflare Workers Development
-- Create LLM Query Worker
-- Develop Aircall Webhook Worker
-- Create Guesty Webhook Worker
-- Develop Voice Processing Worker
+- LLM Query Worker
+- Aircall Webhook Worker
+- Guesty Webhook Worker
 
 ### Qdrant Integration
 - Set up Qdrant Cloud instance
@@ -102,27 +131,7 @@ This document outlines the key milestones for implementing the Chatwoot-based co
 - Develop context retrieval logic
 - Create response formatting
 
-## Milestone 6: Voice Capabilities (3-5 days)
-
-### Azure Speech Services Integration
-- Configure Speech-to-Text service
-- Set up Text-to-Speech service
-- Develop audio processing logic
-- Create secure credential management
-
-### Frontend Voice Integration
-- Implement click-to-talk interface
-- Create audio recording functionality
-- Develop audio playback components
-- Add visual indicators for voice interaction
-
-### Voice Processing Flow
-- Create end-to-end voice processing flow
-- Implement error handling
-- Configure retry mechanisms
-- Optimize for performance
-
-## Milestone 7: Testing and Optimization (2-4 days)
+## Milestone 7: Initial Testing and Optimization (3 Hrs)
 
 ### Performance Testing
 - Test system under load
@@ -142,30 +151,11 @@ This document outlines the key milestones for implementing the Chatwoot-based co
 - Make necessary adjustments
 - Document findings
 
-## Milestone 8: Documentation and Handoff (2-3 days)
-
-### System Documentation
-- Create architecture documentation
-- Document deployment procedures
-- Create troubleshooting guides
-- Document backup and recovery procedures
-
-### User Documentation
-- Create admin documentation
-- Develop user guides
-- Prepare training materials
-- Document configuration settings
-
-### Knowledge Transfer
-- Conduct walkthrough sessions
-- Document key decisions
-- Create maintenance procedures
-- Set up support channels
 
 ## Resource Requirements
 
 ### Development Resources
-- 1 DevOps Engineer (you, with AI assistance)
+- 1 Automation/AI Engineer (with AI assistance)
 
 ### Infrastructure Resources
 - Hetzner Cloud servers for Docker Swarm
@@ -174,18 +164,3 @@ This document outlines the key milestones for implementing the Chatwoot-based co
 - Qdrant Cloud instance
 
 ## Timeline Overview
-
-```
-Days 1-5:    Milestone 1 - Infrastructure as Code Setup
-Days 6-9:    Milestone 2 - Ansible Configuration
-Days 10-14:  Milestone 3 - Base Ecosystem Setup
-Days 15-19:  Milestone 4 - Chatwoot Deployment
-Days 20-25:  Milestone 5 - AI Integration
-Days 26-30:  Milestone 6 - Voice Capabilities
-Days 31-34:  Milestone 7 - Testing and Optimization
-Days 35-37:  Milestone 8 - Documentation and Handoff
-```
-
-Total estimated timeline: 37 days (approximately 7-8 weeks)
-
-With your 30 years of development/DevOps experience and AI assistance, this timeline could potentially be accelerated. The most time-intensive aspects will likely be the AI integration and voice processing setup, as these involve newer technologies and more complex integration points.

@@ -18,6 +18,7 @@ This document logs the key architectural decisions made during the design of our
 | 2025-03-26 | Chatwoot vs. RocketChat evaluation            | [Chatwoot Evaluation](discussions/2025.03.26.01-chatwoot-evaluation/01.0-chatwoot-vs-rocketchat-evaluation.md) |
 | 2025-03-26 | Decision to switch from RocketChat to Chatwoot | [Chatwoot Architecture Proposal](discussions/2025.03.26.01-chatwoot-evaluation/01.7-proposed-architecture-update/chatwoot-architecture-proposal.md) |
 | 2025-03-26 | Voice cost analysis and alternatives          | [Voice Analysis](discussions/2025.03.26.01-chatwoot-evaluation/01.6-voice-cost-analysis-and-alternatives.md) |
+| 2025-03-26 | Decision to switch Back to RocketChat         | |
 
 ## Table of Contents
 
@@ -37,9 +38,9 @@ This document logs the key architectural decisions made during the design of our
 14. [Message Vectorization: Change Stream Listener](#14-message-vectorization-change-stream-listener)
 15. [LLM Query Processing: Edge Computing](#15-llm-query-processing-edge-computing)
 16. [Event-Driven Architecture: Pub/Sub](#16-event-driven-architecture-pubsub)
-17. [Communication Platform: Chatwoot](#17-communication-platform-chatwoot)
+17. [Communication Platform: RocketChat](#17-communication-platform-rocketchat)
 18. [Voice Processing: Azure Speech Services](#18-voice-processing-azure-speech-services)
-
+19. [Database](#19-google-firestore)
 ---
 
 ## 1. Container Orchestration: Docker Swarm
@@ -302,6 +303,11 @@ Use a serverless approach for backup automation with temporary servers created f
 ### Context
 We needed a cost-effective and reliable backup solution that minimizes infrastructure costs while ensuring data safety.
 
+### Technologies
+- Restic
+- Cloudflare R2
+- Google Scheduler + Google Cloud Function to Trigger
+
 ### Rationale
 - **Cost efficiency**: Only pay for server resources during actual backup operations
 - **Automation**: Fully automated process triggered by Cloud Scheduler
@@ -369,7 +375,7 @@ We needed a lightweight monitoring solution that provides real-time metrics and 
 ## 10. Cloud Providers: Multi-Cloud Approach
 
 ### Decision
-Use a multi-cloud approach with Hetzner Cloud as primary infrastructure, GCP for specific services, and Cloudflare for edge services.
+Use a multi-cloud approach with Hetzner Cloud as primary infrastructure, GCP for Databases and Serverless Functions, and Cloudflare for Proxy, Object Storage and Serverless Functions.
 
 ### Date
 2025-03-25
@@ -378,11 +384,11 @@ Use a multi-cloud approach with Hetzner Cloud as primary infrastructure, GCP for
 We needed to balance cost-effectiveness with access to specialized cloud services.
 
 ### Rationale
-- **Hetzner Cloud**: Cost-effective for compute and storage
+- **Hetzner Cloud**: Cost-effective for servers.
 - **GCP**: Managed services like Firestore and Cloud Functions
-- **Cloudflare**: Edge services, CDN, and R2 storage
+- **Cloudflare**: Edge services, Proxy, CDN, Workers and R2 storage
 - **Qdrant Cloud**: Specialized vector database
-- **Groq Cloud**: AI inference optimization
+- **Groq Cloud**: LLM inference Deepseek-Qwen-32b
 
 ### Alternatives Considered
 - **Single cloud provider**: Would increase costs or limit service options
@@ -476,7 +482,7 @@ We needed a deployment process that ensures changes are reviewed and validated b
 ## 13. API Integration: Webhook-Based Approach
 
 ### Decision
-Use webhook-based Cloudflare Workers for API integrations with Aircall and Guesty.
+Use webhook-based Cloudflare Workers for API integrations with Aircall, Guesty and Groq Cloud.
 
 ### Date
 2025-03-25
@@ -521,6 +527,7 @@ Remove the RocketChat message vectorization system and focus only on vectorizing
 
 ### Context
 We initially planned to vectorize all RocketChat messages using a MongoDB Change Stream Listener, but determined this approach was unnecessarily complex and resource-intensive.
+Instead we will only vectorize Q&A content from the LLM Query Worker.
 
 ### Rationale
 - **Focused relevance**: Q&A content is more valuable for retrieval than general chat messages
@@ -530,7 +537,7 @@ We initially planned to vectorize all RocketChat messages using a MongoDB Change
 - **Cost reduction**: Fewer cloud services to maintain and pay for
 
 ### Alternatives Considered
-- **Original approach**: Vectorize all RocketChat messages (deemed excessive)
+- **Original approach**: Vectorize all RocketChat messages (deemed excessive leading to lower quality infromation being fed to the VectorDB)
 - **Selective vectorization**: Only vectorize messages with specific tags or in specific channels
 - **Hybrid approach**: Vectorize all Q&A plus selected important messages
 
@@ -620,48 +627,48 @@ After removing the RocketChat message vectorization component, we reassessed our
 
 ---
 
-## 17. Communication Platform: Chatwoot
+## 17. Communication Platform: RocketChat
 
 ### Decision
-Replace RocketChat with Chatwoot as the central communication platform for both internal team communication and customer interactions.
+Keep RocketChat as the central communication platform for both internal team communication and AI interactions/automations.
 
 ### Date
 2025-03-26
 
 ### Context
-We needed a platform that could effectively handle both internal team communication and external customer interactions, with strong integration capabilities for AI assistance.
+We needed a platform that could effectively handle internal team communication with strong integration capabilities for AI assistance.
 
 ### Rationale
-- **Unified communication**: Chatwoot provides a single platform for both internal and external communication
-- **Customer-centric design**: Built specifically for customer service scenarios with features like shared inboxes and contact profiles
-- **Omnichannel support**: Native support for multiple communication channels (website chat, email, WhatsApp, SMS, social media)
+- **Unified communication**: RocketChat provides a single platform for both internal and AI communication
+- **Team-focused design**: Built specifically for team communication with features like shared channels and tagging
 - **Workflow automation**: Support for automated routing, tagging, and status tracking
 - **Integration capabilities**: Robust API and webhook capabilities for AI integration
 - **PostgreSQL database**: Better suited for structured data and complex queries than MongoDB
 
 ### Alternatives Considered
-- **RocketChat**: Strong for internal communication but limited for customer interactions
-- **Intercom**: Powerful but expensive and less customizable
-- **Zendesk**: Enterprise-focused with higher costs
+- **ChatWoot**: Strong for external communication but limited for team interactions
+- **Mattermost**: Lacks WebHooks and Hubot.
+- **Slack**: Expensive Per-User pricing with higher costs
 - **Custom solution**: Would require significant development resources
 
 ### Consequences
 - Positive: Unified platform for all communications
-- Positive: Better customer interaction management
+- Positive: Better team interaction management
 - Positive: Improved workflow automation
-- Negative: Migration effort from RocketChat
-- Negative: Different internal communication paradigm (inbox-based vs. channel-based)
+- Negative: Less Customer focused.
+- Negative: Different  communication paradigm (channel-based vs. inbox-based)
 
 ### References
 - [Chatwoot Evaluation](discussions/2025.03.26.01-chatwoot-evaluation/01.0-chatwoot-vs-rocketchat-evaluation.md)
 - [Chatwoot Architecture Proposal](discussions/2025.03.26.01-chatwoot-evaluation/01.7-proposed-architecture-update/chatwoot-architecture-proposal.md)
+- Subsequently we decided to go with RocketChat after discussing with the end-client as they already use Guesty for centralized Guest Interactions.
 
 ---
 
-## 18. Voice Processing: Azure Speech Services
+## 18. Voice Processing: DupDub
 
 ### Decision
-Use Azure Speech Services for voice processing capabilities, including Speech-to-Text and Text-to-Speech.
+Use DupDub for voice processing capabilities, including Speech-to-Text and Text-to-Speech.
 
 ### Date
 2025-03-26
@@ -670,11 +677,10 @@ Use Azure Speech Services for voice processing capabilities, including Speech-to
 We needed cost-effective and reliable voice processing capabilities to enable voice interaction with the AI assistant.
 
 ### Rationale
-- **Cost efficiency**: Azure Speech Services offers a good balance of quality and cost
+- **Cost efficiency**: DupDub offers a good balance of quality and cost
 - **High-quality neural voices**: Natural-sounding speech synthesis
 - **Accurate speech recognition**: High accuracy for transcription
 - **Scalability**: Can handle varying loads efficiently
-- **Enterprise reliability**: Backed by Microsoft's infrastructure
 - **Multilingual support**: Supports multiple languages for global operations
 
 ### Alternatives Considered
@@ -687,7 +693,6 @@ We needed cost-effective and reliable voice processing capabilities to enable vo
 - Positive: Cost-effective voice processing
 - Positive: High-quality voice interaction
 - Positive: Reliable service with good uptime
-- Negative: Dependency on Microsoft's platform
 - Negative: Monthly operational costs (estimated $130-$140/month based on projected usage)
 
 ### References
