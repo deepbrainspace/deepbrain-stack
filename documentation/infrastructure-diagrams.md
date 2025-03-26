@@ -55,16 +55,14 @@ graph TD
     end
 
     subgraph "Groq Cloud"
-        Groq["Deepseek-Qwen-32b<br/>Inference"]
+        Groq["Deepseek-Qwen-32b Inference"]
     end
 
     subgraph "Qdrant Cloud"
-        Qdrant["Qdrant Cloud<br/>Vector DB"]
+        Qdrant["Vector DB"]
     end
-    subgraph "AirCall"
+    subgraph "External Services"
         Aircall["API"]
-    end
-    subgraph "Guesty"
         Guesty["API"]
     end
 
