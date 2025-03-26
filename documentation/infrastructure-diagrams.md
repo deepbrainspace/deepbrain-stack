@@ -80,7 +80,6 @@ graph TD
     Core_SeaweedFS <--> App_RocketChat
     Core_SeaweedFS <--> App_MongoDB
     Core_SeaweedFS <--> App_Keycloak
-    Core_SeaweedFS <--> App_Sync
     
     Core_Traefik --> HZ_Firewall
     
@@ -104,10 +103,6 @@ graph TD
     CF_LLMWorker --> App_RocketChat
     
     App_RocketChat <--> GCP_Firestore
-    App_Sync <--> GCP_Firestore
-    
-    App_Sync <--> Qdrant
-    App_Sync <--> Groq
     
     Vercel_SecretsUI <--> CF_Workers
     
