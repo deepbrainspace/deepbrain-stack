@@ -54,7 +54,6 @@ This architecture spans multiple cloud providers:
 - **Google Cloud Platform**: For serverless functions and database
 - **Qdrant Cloud**: For vector database
 - **Groq Cloud**: For LLM inference
-```
 
 ## Hetzner Cloud Infrastructure
 
