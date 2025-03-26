@@ -15,7 +15,13 @@ graph TD
         CF_LLMWorker["LLM Query Worker"]
     end
 
+    %% Moved Vercel next to Cloudflare
+    subgraph "Vercel"
+        Vercel_SecretsUI["Secrets UI"]
+    end
+
     subgraph "Hetzner Cloud"
+        %% Moved Firewall to the left
         HZ_Firewall["Firewall"]
         
         subgraph "HZ_Network"
@@ -48,10 +54,6 @@ graph TD
         GCP_Scheduler["Cloud Scheduler"]
         GCP_BackupFunction["Backup Function"]
         GCP_VectorizeFunction["Vectorize Function"]
-    end
-
-    subgraph "Vercel"
-        Vercel_SecretsUI["Secrets UI"]
     end
 
     subgraph "External Services"
@@ -97,8 +99,9 @@ graph TD
     Core_SeaweedFS -.->|"Storage"| App_Keycloak
     App_Keycloak -.->|"Storage"| Core_SeaweedFS
     
-    %% Backup connections (thick lines)
-    GCP_BackupFunction -->|"Create"| HZ_BackupSnapshot
+    %% Backup connections - now going through firewall
+    GCP_BackupFunction -->|"Create"| HZ_Firewall
+    HZ_Firewall -->|"Access"| HZ_BackupSnapshot
     HZ_BackupSnapshot -->|"Store"| CF_R2
     GCP_Scheduler -->|"Trigger"| GCP_BackupFunction
     
@@ -111,13 +114,16 @@ graph TD
     CF_GuestyWorker -->|"Store"| GCP_Firestore
     
     GCP_Firestore -->|"Process"| GCP_VectorizeFunction
-    GCP_VectorizeFunction -.->|"Index"| Qdrant
+    GCP_VectorizeFunction -.->|"Upsert"| Qdrant
     
     %% LLM flow connections
     App_RocketChat -->|"Query"| CF_LLMWorker
     CF_LLMWorker -.->|"Search"| Qdrant
     CF_LLMWorker -.->|"Generate"| Groq
     CF_LLMWorker -->|"Response"| App_RocketChat
+    
+    %% Added direct upsert from LLM Worker to Qdrant
+    CF_LLMWorker -.->|"Upsert"| Qdrant
     
     App_RocketChat -->|"Data"| GCP_Firestore
     GCP_Firestore -->|"Data"| App_RocketChat
