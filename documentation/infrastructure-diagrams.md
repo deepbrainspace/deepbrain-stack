@@ -75,23 +75,32 @@ graph TD
     Core_Traefik -->|"Ingress"| HZ_Firewall
     
     %% Swarm node connections (dashed lines)
-    DS_Node1 <-.->|"Swarm Traffic"| DS_Node2
-    DS_Node2 <-.->|"Swarm Traffic"| DS_Node3
-    DS_Node3 <-.->|"Swarm Traffic"| DS_Node1
+    DS_Node1 -.->|"Swarm Traffic"| DS_Node2
+    DS_Node2 -.->|"Swarm Traffic"| DS_Node3
+    DS_Node3 -.->|"Swarm Traffic"| DS_Node1
+    DS_Node2 -.->|"Swarm Traffic"| DS_Node1
+    DS_Node3 -.->|"Swarm Traffic"| DS_Node2
+    DS_Node1 -.->|"Swarm Traffic"| DS_Node3
     
-    DS_Node1 <-.->|"Network"| HZ_Network
-    DS_Node2 <-.->|"Network"| HZ_Network
-    DS_Node3 <-.->|"Network"| HZ_Network
+    DS_Node1 -.->|"Network"| HZ_Network
+    DS_Node2 -.->|"Network"| HZ_Network
+    DS_Node3 -.->|"Network"| HZ_Network
+    HZ_Network -.->|"Network"| DS_Node1
+    HZ_Network -.->|"Network"| DS_Node2
+    HZ_Network -.->|"Network"| DS_Node3
     
     %% Storage connections (dotted lines)
-    Core_SeaweedFS <..>|"Storage"| App_RocketChat
-    Core_SeaweedFS <..>|"Storage"| App_MongoDB
-    Core_SeaweedFS <..>|"Storage"| App_Keycloak
+    Core_SeaweedFS -.->|"Storage"| App_RocketChat
+    App_RocketChat -.->|"Storage"| Core_SeaweedFS
+    Core_SeaweedFS -.->|"Storage"| App_MongoDB
+    App_MongoDB -.->|"Storage"| Core_SeaweedFS
+    Core_SeaweedFS -.->|"Storage"| App_Keycloak
+    App_Keycloak -.->|"Storage"| Core_SeaweedFS
     
     %% Backup connections (thick lines)
-    GCP_BackupFunction ==>|"Create"| HZ_BackupSnapshot
-    HZ_BackupSnapshot ==>|"Store"| CF_R2
-    GCP_Scheduler ==>|"Trigger"| GCP_BackupFunction
+    GCP_BackupFunction -->|"Create"| HZ_BackupSnapshot
+    HZ_BackupSnapshot -->|"Store"| CF_R2
+    GCP_Scheduler -->|"Trigger"| GCP_BackupFunction
     
     %% External API connections (colored differently)
     Aircall -->|"Webhook"| CF_AircallWorker
@@ -110,10 +119,12 @@ graph TD
     CF_LLMWorker -.->|"Generate"| Groq
     CF_LLMWorker -->|"Response"| App_RocketChat
     
-    App_RocketChat <-->|"Data"| GCP_Firestore
+    App_RocketChat -->|"Data"| GCP_Firestore
+    GCP_Firestore -->|"Data"| App_RocketChat
     
     %% Vercel connection to KV Store instead of Workers
-    Vercel_SecretsUI <-->|"Manage Secrets"| CF_KV
+    Vercel_SecretsUI -->|"Manage Secrets"| CF_KV
+    CF_KV -->|"Access"| Vercel_SecretsUI
     
     classDef cloudflare fill:#F6821F,color:white;
     classDef hetzner fill:#D50C2D,color:white;
