@@ -4,19 +4,19 @@
 
 ```mermaid
 graph TD
-    %% Arrange major components vertically (top to bottom)
+    %% Arrange in a more balanced horizontal layout
     
-    %% External Services at the top
+    %% Left side - External Services and Vercel
     subgraph "External Services"
         Aircall["Aircall API"]
         Guesty["Guesty API"]
     end
     
-    %% Vercel and Cloudflare next
     subgraph "Vercel"
         Vercel_SecretsUI["Secrets UI"]
     end
 
+    %% Middle left - Cloudflare
     subgraph "Cloudflare"
         CF_DNS["DNS"]
         CF_R2["R2 Storage"]
@@ -27,7 +27,7 @@ graph TD
         CF_LLMWorker["LLM Query Worker"]
     end
     
-    %% Hetzner Cloud in the middle
+    %% Center - Hetzner Cloud with Firewall wrapper
     subgraph "Hetzner Cloud"
         %% Wrap the entire network in a Firewall subgraph
         subgraph "HZ_Firewall_Zone" [Firewall]
@@ -57,7 +57,7 @@ graph TD
         end
     end
     
-    %% GCP below Hetzner
+    %% Right side - GCP, Qdrant and Groq
     subgraph "GCP"
         GCP_Firestore["Firestore"]
         GCP_Scheduler["Cloud Scheduler"]
@@ -65,100 +65,15 @@ graph TD
         GCP_VectorizeFunction["Vectorize Function"]
     end
 
-    %% AI services at the bottom
-    subgraph "Qdrant Cloud"
-        Qdrant["Vector DB"]
+    subgraph "AI Services"
+        subgraph "Qdrant Cloud"
+            Qdrant["Vector DB"]
+        end
+        
+        subgraph "Groq Cloud"
+            Groq["Deepseek-Qwen-32b Inference"]
+        end
     end
-
-    subgraph "Groq Cloud"
-        Groq["Deepseek-Qwen-32b Inference"]
-    end
-
-    %% Network connections (solid lines)
-    CF_DNS -->|"DNS Resolution"| HZ_Firewall_Zone
-    CF_Workers -->|"API Requests"| HZ_Firewall_Zone
-    Core_Traefik -->|"Ingress"| HZ_Firewall_Zone
-    
-    %% Swarm node connections (dashed lines)
-    DS_Node1 -.->|"Swarm Traffic"| DS_Node2
-    DS_Node2 -.->|"Swarm Traffic"| DS_Node3
-    DS_Node3 -.->|"Swarm Traffic"| DS_Node1
-    DS_Node2 -.->|"Swarm Traffic"| DS_Node1
-    DS_Node3 -.->|"Swarm Traffic"| DS_Node2
-    DS_Node1 -.->|"Swarm Traffic"| DS_Node3
-    
-    DS_Node1 -.->|"Network"| HZ_Network
-    DS_Node2 -.->|"Network"| HZ_Network
-    DS_Node3 -.->|"Network"| HZ_Network
-    HZ_Network -.->|"Network"| DS_Node1
-    HZ_Network -.->|"Network"| DS_Node2
-    HZ_Network -.->|"Network"| DS_Node3
-    
-    %% Storage connections (dotted lines)
-    Core_SeaweedFS -.->|"Storage"| App_RocketChat
-    App_RocketChat -.->|"Storage"| Core_SeaweedFS
-    Core_SeaweedFS -.->|"Storage"| App_MongoDB
-    App_MongoDB -.->|"Storage"| Core_SeaweedFS
-    Core_SeaweedFS -.->|"Storage"| App_Keycloak
-    App_Keycloak -.->|"Storage"| Core_SeaweedFS
-    
-    %% Backup connections - now going through firewall zone
-    GCP_BackupFunction -->|"Create"| HZ_Firewall_Zone
-    HZ_BackupSnapshot -->|"Store"| CF_R2
-    GCP_Scheduler -->|"Trigger"| GCP_BackupFunction
-    
-    %% External API connections (colored differently)
-    Aircall -->|"Webhook"| CF_AircallWorker
-    Guesty -->|"Webhook"| CF_GuestyWorker
-    
-    %% Data flow connections
-    CF_AircallWorker -->|"Store"| GCP_Firestore
-    CF_GuestyWorker -->|"Store"| GCP_Firestore
-    
-    GCP_Firestore -->|"Process"| GCP_VectorizeFunction
-    GCP_VectorizeFunction -.->|"Upsert"| Qdrant
-    
-    %% LLM flow connections
-    App_RocketChat -->|"Query"| CF_LLMWorker
-    CF_LLMWorker -.->|"Search"| Qdrant
-    CF_LLMWorker -.->|"Generate"| Groq
-    CF_LLMWorker -->|"Response"| App_RocketChat
-    
-    %% Added direct upsert from LLM Worker to Qdrant
-    CF_LLMWorker -.->|"Upsert"| Qdrant
-    
-    App_RocketChat -->|"Data"| GCP_Firestore
-    GCP_Firestore -->|"Data"| App_RocketChat
-    
-    %% Vercel connection to KV Store instead of Workers
-    Vercel_SecretsUI -->|"Manage Secrets"| CF_KV
-    CF_KV -->|"Access"| Vercel_SecretsUI
-    
-    classDef cloudflare fill:#F6821F,color:white;
-    classDef hetzner fill:#D50C2D,color:white;
-    classDef firewall fill:#D50C2D,color:white,stroke-width:4px;
-    classDef gcp fill:#4285F4,color:white;
-    classDef vercel fill:#000000,color:white;
-    classDef external fill:#666666,color:white;
-    classDef qdrant fill:#656666,color:white;
-    classDef groq fill:#666366,color:white;
-    classDef swarm fill:#2496ED,color:white;
-    classDef core fill:#2496ED,color:white,stroke-dasharray: 5 5;
-    classDef apps fill:#2496ED,color:white,stroke-dasharray: 5 5;
-    classDef network fill:#009688,color:white;
-    
-    %% Apply styles to nodes
-    class CF_DNS,CF_R2,CF_KV,CF_Workers,CF_AircallWorker,CF_GuestyWorker,CF_LLMWorker cloudflare;
-    class DS_Node1,DS_Node2,DS_Node3,HZ_BackupSnapshot hetzner;
-    class HZ_Firewall_Zone firewall;
-    class Core_SeaweedFS,Core_Traefik,Core_Netdata core;
-    class App_RocketChat,App_MongoDB,App_Keycloak apps;
-    class GCP_Firestore,GCP_Scheduler,GCP_BackupFunction,GCP_VectorizeFunction gcp;
-    class Vercel_SecretsUI vercel;
-    class Qdrant qdrant;
-    class Groq groq;
-    class Aircall,Guesty external;
-    class HZ_Network network;
 
     %% Network connections (solid lines)
     CF_DNS -->|"DNS Resolution"| HZ_Firewall_Zone
