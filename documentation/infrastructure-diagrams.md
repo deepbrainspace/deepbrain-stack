@@ -53,16 +53,19 @@ graph TD
         Vercel_SecretsUI["Secrets UI"]
     end
 
+    subgraph "External Services"
+        Aircall["Aircall API"]
+        Guesty["Guesty API"]
+    end
+
+    %% Position these cloud providers to avoid overlap with Hetzner Cloud
     subgraph "Groq Cloud"
         Groq["Deepseek-Qwen-32b Inference"]
     end
 
+    %% Make this more compact
     subgraph "Qdrant Cloud"
         Qdrant["Vector DB"]
-    end
-    subgraph "External Services"
-        Aircall["Aircall API"]
-        Guesty["Guesty API"]
     end
 
     %% Connections
@@ -105,6 +108,10 @@ graph TD
     App_RocketChat <--> GCP_Firestore
     
     Vercel_SecretsUI <--> CF_Workers
+    
+    %% Add explicit connections to help with layout
+    GCP_VectorizeFunction -.-> Qdrant
+    CF_LLMWorker -.-> Groq
     
     classDef cloudflare fill:#F6821F,color:white;
     classDef hetzner fill:#D50C2D,color:white;
@@ -287,8 +294,6 @@ flowchart TD
     class C,D gcp;
     class E qdrant;
 ```
-
-
 
 ## LLM Query Process Flow
 
