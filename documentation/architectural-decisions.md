@@ -15,6 +15,9 @@ This document logs the key architectural decisions made during the design of our
 | 2025-03-25 | Updated architecture diagrams                 | [Updated Diagrams](discussions/2025.03.25.02-serverless-functions/02.2-updated-architecture-diagrams.md) |
 | 2025-03-25 | Serverless functions implementation details   | [Implementation Details](discussions/2025.03.25.02-serverless-functions/02.4-serverless-functions-implementation.md) |
 | 2025-03-25 | Removed RocketChat message vectorization      | [Architecture Simplification](discussions/2025.03.25.02-serverless-functions/02.5-architecture-simplification.md) |
+| 2025-03-26 | Chatwoot vs. RocketChat evaluation            | [Chatwoot Evaluation](discussions/2025.03.26.01-chatwoot-evaluation/01.0-chatwoot-vs-rocketchat-evaluation.md) |
+| 2025-03-26 | Decision to switch from RocketChat to Chatwoot | [Chatwoot Architecture Proposal](discussions/2025.03.26.01-chatwoot-evaluation/01.7-proposed-architecture-update/chatwoot-architecture-proposal.md) |
+| 2025-03-26 | Voice cost analysis and alternatives          | [Voice Analysis](discussions/2025.03.26.01-chatwoot-evaluation/01.6-voice-cost-analysis-and-alternatives.md) |
 
 ## Table of Contents
 
@@ -34,6 +37,8 @@ This document logs the key architectural decisions made during the design of our
 14. [Message Vectorization: Change Stream Listener](#14-message-vectorization-change-stream-listener)
 15. [LLM Query Processing: Edge Computing](#15-llm-query-processing-edge-computing)
 16. [Event-Driven Architecture: Pub/Sub](#16-event-driven-architecture-pubsub)
+17. [Communication Platform: Chatwoot](#17-communication-platform-chatwoot)
+18. [Voice Processing: Azure Speech Services](#18-voice-processing-azure-speech-services)
 
 ---
 
@@ -612,3 +617,79 @@ After removing the RocketChat message vectorization component, we reassessed our
 
 ### References
 - [Architecture Simplification](discussions/2025.03.25.02-serverless-functions/02.5-architecture-simplification.md)
+
+---
+
+## 17. Communication Platform: Chatwoot
+
+### Decision
+Replace RocketChat with Chatwoot as the central communication platform for both internal team communication and customer interactions.
+
+### Date
+2025-03-26
+
+### Context
+We needed a platform that could effectively handle both internal team communication and external customer interactions, with strong integration capabilities for AI assistance.
+
+### Rationale
+- **Unified communication**: Chatwoot provides a single platform for both internal and external communication
+- **Customer-centric design**: Built specifically for customer service scenarios with features like shared inboxes and contact profiles
+- **Omnichannel support**: Native support for multiple communication channels (website chat, email, WhatsApp, SMS, social media)
+- **Workflow automation**: Support for automated routing, tagging, and status tracking
+- **Integration capabilities**: Robust API and webhook capabilities for AI integration
+- **PostgreSQL database**: Better suited for structured data and complex queries than MongoDB
+
+### Alternatives Considered
+- **RocketChat**: Strong for internal communication but limited for customer interactions
+- **Intercom**: Powerful but expensive and less customizable
+- **Zendesk**: Enterprise-focused with higher costs
+- **Custom solution**: Would require significant development resources
+
+### Consequences
+- Positive: Unified platform for all communications
+- Positive: Better customer interaction management
+- Positive: Improved workflow automation
+- Negative: Migration effort from RocketChat
+- Negative: Different internal communication paradigm (inbox-based vs. channel-based)
+
+### References
+- [Chatwoot Evaluation](discussions/2025.03.26.01-chatwoot-evaluation/01.0-chatwoot-vs-rocketchat-evaluation.md)
+- [Chatwoot Architecture Proposal](discussions/2025.03.26.01-chatwoot-evaluation/01.7-proposed-architecture-update/chatwoot-architecture-proposal.md)
+
+---
+
+## 18. Voice Processing: Azure Speech Services
+
+### Decision
+Use Azure Speech Services for voice processing capabilities, including Speech-to-Text and Text-to-Speech.
+
+### Date
+2025-03-26
+
+### Context
+We needed cost-effective and reliable voice processing capabilities to enable voice interaction with the AI assistant.
+
+### Rationale
+- **Cost efficiency**: Azure Speech Services offers a good balance of quality and cost
+- **High-quality neural voices**: Natural-sounding speech synthesis
+- **Accurate speech recognition**: High accuracy for transcription
+- **Scalability**: Can handle varying loads efficiently
+- **Enterprise reliability**: Backed by Microsoft's infrastructure
+- **Multilingual support**: Supports multiple languages for global operations
+
+### Alternatives Considered
+- **Google Cloud Speech**: Similar capabilities but slightly higher cost
+- **Amazon Polly/Transcribe**: Comparable services with similar pricing
+- **ElevenLabs**: Higher quality but significantly more expensive
+- **Self-hosted open-source solutions**: Lower ongoing costs but higher development and maintenance burden
+
+### Consequences
+- Positive: Cost-effective voice processing
+- Positive: High-quality voice interaction
+- Positive: Reliable service with good uptime
+- Negative: Dependency on Microsoft's platform
+- Negative: Monthly operational costs (estimated $130-$140/month based on projected usage)
+
+### References
+- [Voice Cost Analysis](discussions/2025.03.26.01-chatwoot-evaluation/01.6-voice-cost-analysis-and-alternatives.md)
+- [Simplified Implementation Approach](discussions/2025.03.26.01-chatwoot-evaluation/01.5-simplified-implementation-approach.md)
