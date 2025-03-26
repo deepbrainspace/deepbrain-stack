@@ -35,7 +35,6 @@ graph TD
                         App_MongoDB["MongoDB"]
                     end
                     App_Keycloak["Keycloak"]
-                    App_Sync["Sync App"]
                 end
             end
             
@@ -117,6 +116,8 @@ graph TD
     classDef gcp fill:#4285F4,color:white;
     classDef vercel fill:#000000,color:white;
     classDef external fill:#666666,color:white;
+    classDef qdrant fill:#656666,color:white;
+    classDef groq fill:#666366,color:white;
     classDef swarm fill:#2496ED,color:white;
     classDef core fill:#2496ED,color:white,stroke-dasharray: 5 5;
     classDef apps fill:#2496ED,color:white,stroke-dasharray: 5 5;
@@ -125,10 +126,12 @@ graph TD
     class CF_DNS,CF_R2,CF_Workers,CF_AircallWorker,CF_GuestyWorker,CF_LLMWorker cloudflare;
     class DS_Node1,DS_Node2,DS_Node3,HZ_BackupSnapshot,HZ_Firewall hetzner;
     class Core_SeaweedFS,Core_Traefik,Core_Netdata core;
-    class App_RocketChat,App_MongoDB,App_Keycloak,App_Sync apps;
+    class App_RocketChat,App_MongoDB,App_Keycloak;
     class GCP_Firestore,GCP_Scheduler,GCP_BackupFunction,GCP_VectorizeFunction gcp;
     class Vercel_SecretsUI vercel;
-    class Qdrant,Groq,Aircall,Guesty external;
+    class Qdrant qdrant;
+    class Groq groq;
+    class Aircall,Guesty external;
     class HZ_Network network;
 ```
 
