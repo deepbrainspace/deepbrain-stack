@@ -14,6 +14,7 @@ This document logs the key architectural decisions made during the design of our
 | 2025-03-25 | Serverless functions recommendations          | [Serverless Recommendations](discussions/2025.03.25.02-serverless-functions/02.1-serverless-functions-recommendations.md) |
 | 2025-03-25 | Updated architecture diagrams                 | [Updated Diagrams](discussions/2025.03.25.02-serverless-functions/02.2-updated-architecture-diagrams.md) |
 | 2025-03-25 | Serverless functions implementation details   | [Implementation Details](discussions/2025.03.25.02-serverless-functions/02.4-serverless-functions-implementation.md) |
+| 2025-03-25 | Removed RocketChat message vectorization      | [Architecture Simplification](discussions/2025.03.25.02-serverless-functions/02.5-architecture-simplification.md) |
 
 ## Table of Contents
 
@@ -505,41 +506,39 @@ We needed a reliable and real-time method to integrate with external APIs and up
 
 ---
 
-## 14. Message Vectorization: Change Stream Listener
+## 14. Message Vectorization: Focused Q&A Approach
 
 ### Decision
-Use a MongoDB Change Stream Listener to detect and vectorize RocketChat messages.
+Remove the RocketChat message vectorization system and focus only on vectorizing Q&A content from the LLM Query Worker.
 
 ### Date
 2025-03-25
 
 ### Context
-We needed a way to monitor RocketChat messages and create vector representations for AI processing.
+We initially planned to vectorize all RocketChat messages using a MongoDB Change Stream Listener, but determined this approach was unnecessarily complex and resource-intensive.
 
 ### Rationale
-- **Real-time processing**: Change streams provide immediate notification of new messages
-- **Efficiency**: No polling required, reducing unnecessary database queries
-- **Reliability**: Built-in MongoDB feature with resumability
-- **Scalability**: Can handle high message volumes
-- **Low overhead**: Minimal impact on the RocketChat application
+- **Focused relevance**: Q&A content is more valuable for retrieval than general chat messages
+- **Reduced complexity**: Eliminates need for MongoDB Change Stream Listener service
+- **Resource efficiency**: Significantly reduces vector database storage requirements
+- **Simplified architecture**: Removes GCP Pub/Sub, Cloud Functions, and Cloud Run components
+- **Cost reduction**: Fewer cloud services to maintain and pay for
 
 ### Alternatives Considered
-- **Polling-based approach**: Higher latency and resource usage
-- **Application plugin**: Would require modifying RocketChat
-- **Message queue integration**: More complex architecture
-- **Webhook-based approach**: Would require RocketChat configuration changes
+- **Original approach**: Vectorize all RocketChat messages (deemed excessive)
+- **Selective vectorization**: Only vectorize messages with specific tags or in specific channels
+- **Hybrid approach**: Vectorize all Q&A plus selected important messages
 
 ### Consequences
-- Positive: Real-time message processing
-- Positive: No modifications to RocketChat required
-- Positive: Efficient resource usage
-- Negative: Additional service to maintain
-- Negative: Requires MongoDB expertise
+- Positive: Simpler, more maintainable architecture
+- Positive: Lower operational costs
+- Positive: More focused, higher quality vector database
+- Positive: Reduced infrastructure requirements
+- Negative: General chat content not available for retrieval
+- Negative: May miss potentially useful information in regular chat
 
 ### References
-- [Serverless Requirements](discussions/2025.03.25.02-serverless-functions/02.0-serverless-functions-requirements.md)
-- [Serverless Recommendations](discussions/2025.03.25.02-serverless-functions/02.1-serverless-functions-recommendations.md)
-- [Implementation Details](discussions/2025.03.25.02-serverless-functions/02.4-serverless-functions-implementation.md)
+- [Architecture Simplification](discussions/2025.03.25.02-serverless-functions/02.5-architecture-simplification.md)
 
 ---
 
@@ -581,37 +580,35 @@ We needed a solution to process natural language queries from RocketChat, retrie
 
 ---
 
-## 16. Event-Driven Architecture: Pub/Sub
+## 16. Event-Driven Architecture: Simplified Approach
 
 ### Decision
-Use Google Pub/Sub for event-driven communication between services.
+Use a simplified event-driven approach, focusing on webhook-based integrations rather than a comprehensive Pub/Sub system.
 
 ### Date
 2025-03-25
 
 ### Context
-We needed a reliable messaging system for communication between different components of our architecture.
+After removing the RocketChat message vectorization component, we reassessed our need for a full Pub/Sub messaging system.
 
 ### Rationale
-- **Decoupling**: Services can communicate without direct dependencies
-- **Scalability**: Can handle high message volumes
-- **Reliability**: At-least-once delivery guarantees
-- **Managed service**: No infrastructure to maintain
-- **Integration**: Works well with Google Cloud Functions
+- **Reduced complexity**: Fewer components and services to maintain
+- **Direct integrations**: Webhook-based approach provides sufficient event handling
+- **Cost efficiency**: Elimination of Google Pub/Sub reduces cloud service costs
+- **Simplified operations**: Fewer moving parts means easier troubleshooting
+- **Adequate performance**: Current event volume doesn't justify a dedicated messaging system
 
 ### Alternatives Considered
-- **RabbitMQ/Kafka**: Would require self-hosting
-- **Redis Pub/Sub**: Less durable message delivery
-- **Direct API calls**: Tighter coupling between services
-- **Webhook-based communication**: More complex to implement reliably
+- **Original Pub/Sub approach**: More complex than needed after architecture simplification
+- **Self-hosted message queue**: Would add unnecessary infrastructure burden
+- **Synchronous API calls**: Would create tighter coupling between services
 
 ### Consequences
-- Positive: Loose coupling between services
-- Positive: Reliable message delivery
-- Positive: Scalable with usage
-- Negative: Additional GCP service dependency
-- Negative: Potential message duplication to handle
+- Positive: Simpler architecture with fewer dependencies
+- Positive: Lower operational costs
+- Positive: Easier to understand and maintain
+- Negative: May need to revisit if event volume increases significantly
+- Negative: Less flexibility for complex event patterns
 
 ### References
-- [Serverless Recommendations](discussions/2025.03.25.02-serverless-functions/02.1-serverless-functions-recommendations.md)
-- [Implementation Details](discussions/2025.03.25.02-serverless-functions/02.4-serverless-functions-implementation.md)
+- [Architecture Simplification](discussions/2025.03.25.02-serverless-functions/02.5-architecture-simplification.md)

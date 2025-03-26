@@ -141,7 +141,7 @@ infrastructure/
 │   │   │   ├── scheduler/
 │   │   │   └── pubsub/
 │   │   └── qdrant/
-│   ├── environments/
+│   └── environments/
 │       ├── dev/
 │       ├── staging/
 │       └── prod/
