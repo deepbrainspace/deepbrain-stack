@@ -4,6 +4,11 @@
 
 ```mermaid
 graph TD
+    %% Moved Vercel to the left of Cloudflare
+    subgraph "Vercel"
+        Vercel_SecretsUI["Secrets UI"]
+    end
+
     %% Main Cloud Providers
     subgraph "Cloudflare"
         CF_DNS["DNS"]
@@ -15,13 +20,8 @@ graph TD
         CF_LLMWorker["LLM Query Worker"]
     end
 
-    %% Moved Vercel next to Cloudflare
-    subgraph "Vercel"
-        Vercel_SecretsUI["Secrets UI"]
-    end
-
     subgraph "Hetzner Cloud"
-        %% Moved Firewall to the left
+        %% Firewall on the left
         HZ_Firewall["Firewall"]
         
         subgraph "HZ_Network"
@@ -61,14 +61,14 @@ graph TD
         Guesty["Guesty API"]
     end
 
-    %% Position these cloud providers to avoid overlap with Hetzner Cloud
-    subgraph "Groq Cloud"
-        Groq["Deepseek-Qwen-32b Inference"]
-    end
-
     %% Make this more compact
     subgraph "Qdrant Cloud"
         Qdrant["Vector DB"]
+    end
+
+    %% Positioned Groq Cloud below Qdrant Cloud
+    subgraph "Groq Cloud"
+        Groq["Deepseek-Qwen-32b Inference"]
     end
 
     %% Network connections (solid lines)
