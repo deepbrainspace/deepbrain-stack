@@ -55,28 +55,30 @@ graph TB
     end
 
     subgraph "Hetzner Cloud"
-        subgraph "Docker Swarm Cluster"
-            DS_Node1["Node 1\nManager + Worker"]
-            DS_Node2["Node 2\nManager + Worker"]
-            DS_Node3["Node 3\nManager + Worker"]
-            
-            subgraph "Core Services"
-                Core_SeaweedFS["SeaweedFS"]
-                Core_Traefik["Traefik"]
-                Core_Netdata["Netdata"]
-            end
-            
-            subgraph "Applications"
-                App_RocketChat["RocketChat"]
-                App_MongoDB["MongoDB"]
-                App_Keycloak["Keycloak"]
-                App_Sync["Sync App"]
-            end
-        end
-        
-        HZ_Backup["Backup Server"]
-        HZ_Network["Private Network"]
         HZ_Firewall["Firewall"]
+        
+        subgraph "Private Network"
+            subgraph "Docker Swarm Cluster"
+                DS_Node1["Node 1 Manager + Worker"]
+                DS_Node2["Node 2 Manager + Worker"]
+                DS_Node3["Node 3 Manager + Worker"]
+                
+                subgraph "Core Services"
+                    Core_SeaweedFS["SeaweedFS"]
+                    Core_Traefik["Traefik"]
+                    Core_Netdata["Netdata"]
+                end
+                
+                subgraph "Applications"
+                    App_RocketChat["RocketChat"]
+                    App_MongoDB["MongoDB"]
+                    App_Keycloak["Keycloak"]
+                    App_Sync["Sync App"]
+                end
+            end
+            
+            HZ_Backup["Backup Server"]
+        end
     end
 
     subgraph "GCP"
@@ -90,8 +92,8 @@ graph TB
     end
 
     subgraph "External Services"
-        Qdrant["Qdrant Cloud\nVector DB"]
-        Groq["Groq Cloud\nInference"]
+        Qdrant["Qdrant Cloud Vector DB"]
+        Groq["Groq Cloud Inference"]
     end
 
     %% Connections
@@ -102,22 +104,12 @@ graph TB
     DS_Node2 <--> DS_Node3
     DS_Node3 <--> DS_Node1
     
-    DS_Node1 <--> HZ_Network
-    DS_Node2 <--> HZ_Network
-    DS_Node3 <--> HZ_Network
-    HZ_Backup <--> HZ_Network
-    
-    Core_SeaweedFS <--> App_RocketChat
-    Core_SeaweedFS <--> App_MongoDB
-    Core_SeaweedFS <--> App_Keycloak
-    Core_SeaweedFS <--> App_Sync
-    
     Core_Traefik --> HZ_Firewall
     
     HZ_Backup --> CF_R2
     
-    GCP_Functions <--> DS_Node1
-    GCP_CloudRun <--> DS_Node1
+    GCP_Functions <--> HZ_Firewall
+    GCP_CloudRun <--> HZ_Firewall
     
     App_RocketChat <--> GCP_Firestore
     App_Sync <--> GCP_Firestore
@@ -135,14 +127,16 @@ graph TB
     classDef swarm fill:#2496ED,color:white;
     classDef core fill:#2496ED,color:white,stroke-dasharray: 5 5;
     classDef apps fill:#2496ED,color:white,stroke-dasharray: 5 5;
+    classDef network fill:#009688,color:white;
     
     class CF_DNS,CF_R2,CF_Workers cloudflare;
-    class DS_Node1,DS_Node2,DS_Node3,HZ_Backup,HZ_Network,HZ_Firewall hetzner;
+    class DS_Node1,DS_Node2,DS_Node3,HZ_Backup,HZ_Firewall hetzner;
     class Core_SeaweedFS,Core_Traefik,Core_Netdata core;
     class App_RocketChat,App_MongoDB,App_Keycloak,App_Sync apps;
     class GCP_Firestore,GCP_Functions,GCP_CloudRun gcp;
     class Vercel_SecretsUI vercel;
     class Qdrant,Groq external;
+    class "Private Network" network;
 ```
 
 ## Hetzner Cloud Infrastructure
@@ -222,6 +216,7 @@ infrastructure/
 │   ├── modules/
 │   │   ├── hetzner-swarm/
 │   │   ├── hetzner-network/
+│   │   ├── hetzner-firewall/
 │   │   ├── cloudflare/
 │   │   ├── gcp/
 │   │   │   ├── functions/
@@ -535,23 +530,23 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    A[Scheduled Backup Job] --> B{Backup Type}
-    B -->|Docker Swarm Data| C[Restic on Swarm Nodes]
-    B -->|SeaweedFS Volumes| D[Backup Server\nMounts Volumes]
+    %% Numbered steps for clarity
+    A[1. Google Cloud Scheduler] --> B[2. Trigger Backup Cloud Function]
+    B --> C[3. Create Server from Snapshot]
+    C --> D[4. Server Boots and Mounts Volumes]
     
-    C --> E[Backup /opt/core]
-    D --> F[Backup /opt/apps]
+    D --> E[5. Restic Runs Backup]
+    E --> F[6. Upload to Cloudflare R2]
     
-    E --> G[Cloudflare R2]
-    F --> G
+    F --> G[7. Apply Retention Policy]
+    G -->|Daily| H[Keep 7 Days]
+    G -->|Weekly| I[Keep 4 Weeks]
+    G -->|Monthly| J[Keep 12 Months]
     
-    G --> H{Retention Policy}
-    H -->|Daily| I[Keep 7 Days]
-    H -->|Weekly| J[Keep 4 Weeks]
-    H -->|Monthly| K[Keep 12 Months]
+    E --> K[8. Update Status in Firestore]
+    K --> L[9. Self-Destruct Server]
     
-    L[Backup Verification] --> M[Restore Test]
-    M --> N{Verification\nSuccessful?}
+    M[10. Monitoring Checks Status] --> N{11. Backup Successful?}
     N -->|Yes| O[Log Success]
     N -->|No| P[Alert Team]
     
@@ -560,9 +555,9 @@ flowchart TD
     classDef decision fill:#9C27B0,color:white;
     classDef alert fill:#F44336,color:white;
     
-    class A,C,D,E,F,L,M process;
-    class G,I,J,K,O storage;
-    class B,H,N decision;
+    class A,B,C,D,E,K,L,M process;
+    class F,G,H,I,J,O storage;
+    class N decision;
     class P alert;
 ```
 
@@ -702,13 +697,13 @@ This approach eliminates the need for a permanent backup server, reducing costs 
 
 External APIs are integrated using webhook-based Cloudflare Workers:
 
-- **Aircall Webhook Worker** receives real-time updates from the Aircall API
-- **Guesty Webhook Worker** receives real-time updates from the Guesty API
-- **Data transformation** occurs at the edge for optimal performance
-- **Firestore database** stores the normalized data
-- **Vectorize Function** creates vector representations for AI queries
+1. **Aircall/Guesty Webhook Worker** receives real-time updates from external APIs
+2. **Data transformation** occurs at the edge for optimal performance
+3. **Firestore database** stores the normalized data
+4. **Firestore write triggers** a separate Google Cloud Function
+5. **Vectorize Function** creates vector representations and updates Qdrant
 
-This architecture provides real-time data synchronization without polling, reducing latency and resource usage.
+This architecture provides real-time data synchronization without polling, reducing latency and resource usage. The separation of concerns between the webhook processing and vectorization ensures each component remains focused and maintainable.
 
 ### 3. RocketChat Message Vectorization
 
