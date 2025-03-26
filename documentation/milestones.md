@@ -151,7 +151,6 @@ This document outlines the key milestones for implementing the Chatwoot-based co
 - Make necessary adjustments
 - Document findings
 
-
 ## Resource Requirements
 
 ### Development Resources
