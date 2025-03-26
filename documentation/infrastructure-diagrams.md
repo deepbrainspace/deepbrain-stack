@@ -136,7 +136,7 @@ graph TD
 
 ```mermaid
 flowchart TD
-    A["Developer\nCommits Changes"] -->|"1. Push to Branch"| B["Create Pull Request"]
+    A["Developer<br/>Commits Changes"] -->|"1. Push to Branch"| B["Create Pull Request"]
     B --> |"2. Trigger CI"| C{"GitHub Actions\nPR Validation"}
     C -->|"3a. Run Ansible Check Mode"| D["Generate Diff"]
     C -->|"3b. Validate Functions"| E["Test Functions Locally"]
