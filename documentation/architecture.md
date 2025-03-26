@@ -128,7 +128,7 @@ Located in `/opt/apps/<name>`:
 
 ## Repository Structure
 
-```
+```md
 infrastructure/
 ├── terraform/
 │   ├── modules/
@@ -217,7 +217,7 @@ infrastructure/
 
 ### Ansible Role Structure Example
 
-```
+```md
 roles/
 └── apps/
     └── rocketchat/
@@ -234,7 +234,7 @@ roles/
 
 ### Environment and Application-Specific Variables
 
-```
+```md
 group_vars/
 ├── all/
 │   └── common.yml             # Variables common to all environments
@@ -249,7 +249,7 @@ group_vars/
     └── (similar structure)
 ```
 
-Example of application-specific configuration:
+### Example of application-specific configuration:
 
 ```yaml
 # group_vars/dev/rocketchat.yml
