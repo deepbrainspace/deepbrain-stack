@@ -57,7 +57,7 @@ graph TB
     subgraph "Hetzner Cloud"
         HZ_Firewall["Firewall"]
         
-        subgraph "Private Network"
+        subgraph PrivateNetwork["Private Network"]
             subgraph "Docker Swarm Cluster"
                 DS_Node1["Node 1 Manager + Worker"]
                 DS_Node2["Node 2 Manager + Worker"]
@@ -70,8 +70,10 @@ graph TB
                 end
                 
                 subgraph "Applications"
-                    App_RocketChat["RocketChat"]
-                    App_MongoDB["MongoDB"]
+                    subgraph "RocketChat"
+                        App_RocketChat["RocketChat"]
+                        App_MongoDB["MongoDB"]
+                    end
                     App_Keycloak["Keycloak"]
                     App_Sync["Sync App"]
                 end
@@ -136,7 +138,7 @@ graph TB
     class GCP_Firestore,GCP_Functions,GCP_CloudRun gcp;
     class Vercel_SecretsUI vercel;
     class Qdrant,Groq external;
-    class "Private Network" network;
+    class PrivateNetwork network;
 ```
 
 ## Hetzner Cloud Infrastructure
@@ -169,6 +171,7 @@ Located in `/opt/apps/<name>`:
 - **Self-destruction** after backup completion
 - **Retention policy**: 7 daily, 4 weekly, 12 monthly backups
 - **Monitoring integration** with status updates in Firestore
+- **Ansible deployment** for initial server setup and configuration
 
 ### Network Security
 - Private network for internal communication
@@ -685,11 +688,11 @@ flowchart TD
 
 The backup process has been redesigned to use a serverless approach:
 
-- **Google Cloud Scheduler** triggers a Cloud Function daily
-- **Backup Cloud Function** creates a server from a pre-configured snapshot
-- **Backup Server** automatically mounts volumes, performs backups, and self-destructs
-- **Status updates** are sent to Firestore and monitoring systems
-- **Retention policies** (7 daily, 4 weekly, 12 monthly) are applied automatically
+1. **Google Cloud Scheduler** triggers a Cloud Function daily
+2. **Backup Cloud Function** creates a server from a pre-configured snapshot
+3. **Backup Server** automatically mounts volumes, performs backups based on restic configuration, and self-destructs
+4. **Status updates** are sent to Firestore and monitoring systems
+5. **Retention policies** (7 daily, 4 weekly, 12 monthly) are applied automatically
 
 This approach eliminates the need for a permanent backup server, reducing costs while maintaining robust backup capabilities.
 
@@ -700,7 +703,7 @@ External APIs are integrated using webhook-based Cloudflare Workers:
 1. **Aircall/Guesty Webhook Worker** receives real-time updates from external APIs
 2. **Data transformation** occurs at the edge for optimal performance
 3. **Firestore database** stores the normalized data
-4. **Firestore write triggers** a separate Google Cloud Function
+4. **Firestore write** triggers a separate Google Cloud Function
 5. **Vectorize Function** creates vector representations and updates Qdrant
 
 This architecture provides real-time data synchronization without polling, reducing latency and resource usage. The separation of concerns between the webhook processing and vectorization ensures each component remains focused and maintainable.
@@ -709,10 +712,10 @@ This architecture provides real-time data synchronization without polling, reduc
 
 RocketChat messages are automatically vectorized for AI queries:
 
-- **MongoDB Change Stream Listener** monitors for new messages
-- **Google Pub/Sub** receives message events
-- **Vectorize Function** creates vector representations
-- **Qdrant Vector Database** stores the vectors for semantic search
+1. **MongoDB Change Stream Listener** monitors for new messages
+2. **Google Pub/Sub** receives message events
+3. **Vectorize Function** creates vector representations
+4. **Qdrant Vector Database** stores the vectors for semantic search
 
 This approach ensures that all communication is searchable and can be referenced by the LLM system.
 
@@ -720,11 +723,11 @@ This approach ensures that all communication is searchable and can be referenced
 
 Natural language queries in RocketChat are processed by:
 
-- **LLM Query Cloudflare Worker** receives webhook events from RocketChat
-- **Qdrant Vector Database** provides relevant context
-- **Groq LLM API** generates responses based on context
-- **Response formatting** ensures clear presentation in RocketChat
-- **Query and response storage** maintains a history for future reference
+1. **LLM Query Cloudflare Worker** receives webhook events from RocketChat
+2. **Qdrant Vector Database** provides relevant context
+3. **Groq LLM API** generates responses based on context
+4. **Response formatting** ensures clear presentation in RocketChat
+5. **Query and response storage** maintains a history for future reference
 
 This system allows users to query business data using natural language, improving efficiency and accessibility.
 
