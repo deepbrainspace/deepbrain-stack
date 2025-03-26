@@ -62,8 +62,8 @@ graph TD
         Qdrant["Vector DB"]
     end
     subgraph "External Services"
-        Aircall["API"]
-        Guesty["API"]
+        Aircall["Aircall API"]
+        Guesty["Guesty API"]
     end
 
     %% Connections
@@ -137,7 +137,7 @@ graph TD
 ```mermaid
 flowchart TD
     A["Developer<br/>Commits Changes"] -->|"1. Push to Branch"| B["Create Pull Request"]
-    B --> |"2. Trigger CI"| C{"GitHub Actions\nPR Validation"}
+    B --> |"2. Trigger CI"| C{"GitHub Actions<br/>PR Validation"}
     C -->|"3a. Run Ansible Check Mode"| D["Generate Diff"]
     C -->|"3b. Validate Functions"| E["Test Functions Locally"]
     D --> |"4a. Add Results"| F["Post Diff to PR"]
