@@ -8,6 +8,7 @@ graph TD
     subgraph "Cloudflare"
         CF_DNS["DNS"]
         CF_R2["R2 Storage"]
+        CF_KV["KV Store"]
         CF_Workers["Workers"]
         CF_AircallWorker["Aircall Webhook Worker"]
         CF_GuestyWorker["Guesty Webhook Worker"]
@@ -24,8 +25,8 @@ graph TD
                 DS_Node3["Node 3<br/>Manager + Worker"]
                 
                 subgraph "Core Services"
-                    Core_SeaweedFS["SeaweedFS"]
                     Core_Traefik["Traefik"]
+                    Core_SeaweedFS["SeaweedFS"]
                     Core_Netdata["Netdata"]
                 end
                 
@@ -68,50 +69,51 @@ graph TD
         Qdrant["Vector DB"]
     end
 
-    %% Connections
-    CF_DNS --> HZ_Firewall
-    CF_Workers --> HZ_Firewall
+    %% Network connections (solid lines)
+    CF_DNS -->|"DNS Resolution"| HZ_Firewall
+    CF_Workers -->|"API Requests"| HZ_Firewall
+    Core_Traefik -->|"Ingress"| HZ_Firewall
     
-    DS_Node1 <--> DS_Node2
-    DS_Node2 <--> DS_Node3
-    DS_Node3 <--> DS_Node1
+    %% Swarm node connections (dashed lines)
+    DS_Node1 <-.->|"Swarm Traffic"| DS_Node2
+    DS_Node2 <-.->|"Swarm Traffic"| DS_Node3
+    DS_Node3 <-.->|"Swarm Traffic"| DS_Node1
     
-    DS_Node1 <--> HZ_Network
-    DS_Node2 <--> HZ_Network
-    DS_Node3 <--> HZ_Network
+    DS_Node1 <-.->|"Network"| HZ_Network
+    DS_Node2 <-.->|"Network"| HZ_Network
+    DS_Node3 <-.->|"Network"| HZ_Network
     
-    Core_SeaweedFS <--> App_RocketChat
-    Core_SeaweedFS <--> App_MongoDB
-    Core_SeaweedFS <--> App_Keycloak
+    %% Storage connections (dotted lines)
+    Core_SeaweedFS <..>|"Storage"| App_RocketChat
+    Core_SeaweedFS <..>|"Storage"| App_MongoDB
+    Core_SeaweedFS <..>|"Storage"| App_Keycloak
     
-    Core_Traefik --> HZ_Firewall
+    %% Backup connections (thick lines)
+    GCP_BackupFunction ==>|"Create"| HZ_BackupSnapshot
+    HZ_BackupSnapshot ==>|"Store"| CF_R2
+    GCP_Scheduler ==>|"Trigger"| GCP_BackupFunction
     
-    GCP_BackupFunction --> HZ_BackupSnapshot
-    HZ_BackupSnapshot --> CF_R2
+    %% External API connections (colored differently)
+    Aircall -->|"Webhook"| CF_AircallWorker
+    Guesty -->|"Webhook"| CF_GuestyWorker
     
-    GCP_Scheduler --> GCP_BackupFunction
+    %% Data flow connections
+    CF_AircallWorker -->|"Store"| GCP_Firestore
+    CF_GuestyWorker -->|"Store"| GCP_Firestore
     
-    Aircall --> CF_AircallWorker
-    Guesty --> CF_GuestyWorker
+    GCP_Firestore -->|"Process"| GCP_VectorizeFunction
+    GCP_VectorizeFunction -.->|"Index"| Qdrant
     
-    CF_AircallWorker --> GCP_Firestore
-    CF_GuestyWorker --> GCP_Firestore
+    %% LLM flow connections
+    App_RocketChat -->|"Query"| CF_LLMWorker
+    CF_LLMWorker -.->|"Search"| Qdrant
+    CF_LLMWorker -.->|"Generate"| Groq
+    CF_LLMWorker -->|"Response"| App_RocketChat
     
-    GCP_Firestore --> GCP_VectorizeFunction
-    GCP_VectorizeFunction --> Qdrant
+    App_RocketChat <-->|"Data"| GCP_Firestore
     
-    App_RocketChat --> CF_LLMWorker
-    CF_LLMWorker --> Qdrant
-    CF_LLMWorker --> Groq
-    CF_LLMWorker --> App_RocketChat
-    
-    App_RocketChat <--> GCP_Firestore
-    
-    Vercel_SecretsUI <--> CF_Workers
-    
-    %% Add explicit connections to help with layout
-    GCP_VectorizeFunction -.-> Qdrant
-    CF_LLMWorker -.-> Groq
+    %% Vercel connection to KV Store instead of Workers
+    Vercel_SecretsUI <-->|"Manage Secrets"| CF_KV
     
     classDef cloudflare fill:#F6821F,color:white;
     classDef hetzner fill:#D50C2D,color:white;
@@ -125,7 +127,8 @@ graph TD
     classDef apps fill:#2496ED,color:white,stroke-dasharray: 5 5;
     classDef network fill:#009688,color:white;
     
-    class CF_DNS,CF_R2,CF_Workers,CF_AircallWorker,CF_GuestyWorker,CF_LLMWorker cloudflare;
+    %% Apply styles to nodes
+    class CF_DNS,CF_R2,CF_KV,CF_Workers,CF_AircallWorker,CF_GuestyWorker,CF_LLMWorker cloudflare;
     class DS_Node1,DS_Node2,DS_Node3,HZ_BackupSnapshot,HZ_Firewall hetzner;
     class Core_SeaweedFS,Core_Traefik,Core_Netdata core;
     class App_RocketChat,App_MongoDB,App_Keycloak apps;
