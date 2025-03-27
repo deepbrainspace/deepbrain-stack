@@ -18,7 +18,7 @@ This document logs the key architectural decisions made during the design of our
 | 2025-03-26 | Chatwoot vs. RocketChat evaluation            | [Chatwoot Evaluation](discussions/2025.03.26.01-chatwoot-evaluation/01.0-chatwoot-vs-rocketchat-evaluation.md) |
 | 2025-03-26 | Decision to switch from RocketChat to Chatwoot | [Chatwoot Architecture Proposal](discussions/2025.03.26.01-chatwoot-evaluation/01.7-proposed-architecture-update/chatwoot-architecture-proposal.md) |
 | 2025-03-26 | Voice cost analysis and alternatives          | [Voice Analysis](discussions/2025.03.26.01-chatwoot-evaluation/01.6-voice-cost-analysis-and-alternatives.md) |
-| 2025-03-26 | Decision to switch Back to RocketChat         | |
+| 2025-03-26 | Decision to revert to RocketChat              | [RocketChat Reversion](discussions/2025.03.26.03-rocketchat-reversion/01.0-rocketchat-reversion-decision.md) |
 
 ## Table of Contents
 
@@ -630,38 +630,38 @@ After removing the RocketChat message vectorization component, we reassessed our
 ## 17. Communication Platform: RocketChat
 
 ### Decision
-Keep RocketChat as the central communication platform for both internal team communication and AI interactions/automations.
+Use RocketChat as the central communication platform for both internal team communication and AI interactions, with custom app development to enhance its capabilities.
 
 ### Date
 2025-03-26
 
 ### Context
-We needed a platform that could effectively handle internal team communication with strong integration capabilities for AI assistance.
+After evaluating Chatwoot as a potential replacement for RocketChat, we determined that RocketChat better meets our requirements for team communication while still providing adequate capabilities for our AI integration needs.
 
 ### Rationale
-- **Unified communication**: RocketChat provides a single platform for both internal and AI communication
-- **Team-focused design**: Built specifically for team communication with features like shared channels and tagging
-- **Workflow automation**: Support for automated routing, tagging, and status tracking
-- **Integration capabilities**: Robust API and webhook capabilities for AI integration
-- **PostgreSQL database**: Better suited for structured data and complex queries than MongoDB
+- **Native team collaboration**: RocketChat's channel-based structure is purpose-built for team collaboration with features like threads, mentions, and file sharing
+- **Custom app flexibility**: RocketChat's app framework provides more flexibility for implementing our specific requirements
+- **Existing integration plans**: We already have well-developed plans for integrating RocketChat with our AI system and external services
+- **Familiar interface**: The team is already familiar with channel-based communication platforms similar to RocketChat
+- **Custom development**: We can enhance RocketChat's capabilities through custom app development to meet our specific needs
 
 ### Alternatives Considered
-- **ChatWoot**: Strong for external communication but limited for team interactions
-- **Mattermost**: Lacks WebHooks and Hubot.
-- **Slack**: Expensive Per-User pricing with higher costs
+- **Chatwoot**: Strong for external communication but limited for team interactions (evaluated extensively but ultimately rejected)
+- **Mattermost**: Lacks webhook capabilities and integration options
+- **Slack**: Expensive per-user pricing with higher costs
 - **Custom solution**: Would require significant development resources
 
 ### Consequences
-- Positive: Unified platform for all communications
-- Positive: Better team interaction management
-- Positive: Improved workflow automation
-- Negative: Less Customer focused.
-- Negative: Different  communication paradigm (channel-based vs. inbox-based)
+- Positive: Better support for team collaboration workflows
+- Positive: More flexible platform for custom development
+- Positive: Continued use of existing architecture and integration plans
+- Negative: Less customer-focused than Chatwoot
+- Negative: Requires custom development to enhance customer communication capabilities
 
 ### References
 - [Chatwoot Evaluation](discussions/2025.03.26.01-chatwoot-evaluation/01.0-chatwoot-vs-rocketchat-evaluation.md)
 - [Chatwoot Architecture Proposal](discussions/2025.03.26.01-chatwoot-evaluation/01.7-proposed-architecture-update/chatwoot-architecture-proposal.md)
-- Subsequently we decided to go with RocketChat after discussing with the end-client as they already use Guesty for centralized Guest Interactions.
+- [RocketChat Reversion Decision](discussions/2025.03.26.03-rocketchat-reversion/01.0-rocketchat-reversion-decision.md)
 
 ---
 
