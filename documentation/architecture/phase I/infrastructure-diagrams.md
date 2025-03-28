@@ -1,9 +1,5 @@
 ```mermaid
-```mermaid
 flowchart TD
-    %% System Architecture - Flowchart Style
-
-    %% --- Define Styles ---
     classDef cloudflare fill:#F6821F,color:white;
     classDef hetzner fill:#D50C2D,color:white;
     classDef firewall fill:#D50C2D,color:white,stroke-width:4px,stroke-dasharray: 5 5;
@@ -17,70 +13,66 @@ flowchart TD
     classDef apps fill:#E6E6FA,color:black;
     classDef ai fill:#9C27B0,color:white;
 
-    %% --- Structure Definition ---
-
     subgraph External_APIs [External APIs]
         direction LR
-        Ext_Aircall["Aircall API"]
-        Ext_Guesty["Guesty API"]
+        Ext_Aircall["Aircall API"]:::external
+        Ext_Guesty["Guesty API"]:::external
     end
 
     subgraph Edge_Layer [Cloudflare & Vercel]
         direction LR
         subgraph Cloudflare
-           CF_DNS["DNS / Proxy"]
-           CF_Workers["Workers (Generic)"]
-           CF_R2["R2 (Backup Storage)"]
-           CF_KV["KV (Secrets Data)"]
-           CF_AircallWorker["Aircall Webhook Worker"]
-           CF_GuestyWorker["Guesty Webhook Worker"]
-           CF_LLMWorker["LLM Query Worker"]
+           CF_DNS["DNS / Proxy"]:::cloudflare
+           CF_Workers["Workers (Generic)"]:::cloudflare
+           CF_R2["R2 (Backup Storage)"]:::cloudflare
+           CF_KV["KV (Secrets Data)"]:::cloudflare
+           CF_AircallWorker["Aircall Webhook Worker"]:::cloudflare
+           CF_GuestyWorker["Guesty Webhook Worker"]:::cloudflare
+           CF_LLMWorker["LLM Query Worker"]:::cloudflare
         end
         subgraph Vercel
-            Vercel_SecretsUI["Secrets UI"]
+            Vercel_SecretsUI["Secrets UI"]:::vercel
         end
     end
 
-    subgraph Hetzner [Hetzner Cloud]
-        subgraph HZ_Firewall [Firewall Zone]
+    subgraph Hetzner [Hetzner Cloud]:::hetzner
+        subgraph HZ_Firewall [Firewall Zone]:::firewall
             direction TB
-            Core_Traefik["Traefik (Ingress)"]
-            subgraph Swarm [Docker Swarm Cluster]
+            Core_Traefik["Traefik (Ingress)"]:::core
+            subgraph Swarm [Docker Swarm Cluster]:::swarm
                 direction TB
-                Node1["Node 1"]
-                Node2["Node 2"]
-                Node3["Node 3"]
+                Node1["Node 1"]:::swarm
+                Node2["Node 2"]:::swarm
+                Node3["Node 3"]:::swarm
 
                 subgraph Core_Services [Core Services]
-                   Core_SeaweedFS["SeaweedFS (Storage)"]
-                   Core_Netdata["Netdata (Monitoring)"]
+                   Core_SeaweedFS["SeaweedFS (Storage)"]:::core
+                   Core_Netdata["Netdata (Monitoring)"]:::core
                 end
 
                 subgraph Applications [Applications]
-                   App_RocketChat["RocketChat"]
-                   App_MongoDB["MongoDB (for RocketChat)"]
-                   App_Keycloak["Keycloak (Auth)"]
+                   App_RocketChat["RocketChat"]:::apps
+                   App_MongoDB["MongoDB (for RocketChat)"]:::apps
+                   App_Keycloak["Keycloak (Auth)"]:::apps
                 end
             end
         end
     end
 
-    subgraph GCP [GCP Services]
+    subgraph GCP [GCP Services]:::gcp
         direction TB
-        GCP_Firestore["Firestore (App Data / Status)"]
-        GCP_Scheduler["Cloud Scheduler (Triggers)"]
-        GCP_BackupFunc["Backup Function"]
-        GCP_VectorizeFunc["Vectorize Function"]
-        GCP_PubSub["Pub/Sub (Events)"]
+        GCP_Firestore["Firestore (App Data / Status)"]:::gcp
+        GCP_Scheduler["Cloud Scheduler (Triggers)"]:::gcp
+        GCP_BackupFunc["Backup Function"]:::gcp
+        GCP_VectorizeFunc["Vectorize Function"]:::gcp
+        GCP_PubSub["Pub/Sub (Events)"]:::gcp
     end
 
-    subgraph AI_Services [Managed AI Services]
+    subgraph AI_Services [Managed AI Services]:::ai
         direction LR
-        Qdrant["Qdrant Cloud (Vector DB)"]
-        Groq["Groq Cloud (LLM Inference)"]
+        Qdrant["Qdrant Cloud (Vector DB)"]:::qdrant
+        Groq["Groq Cloud (LLM Inference)"]:::groq
     end
-
-    %% --- Define Primary Flows / Connections ---
 
     CF_DNS --> Core_Traefik;
     Ext_Aircall -- "Webhook" --> CF_AircallWorker;
@@ -104,19 +96,4 @@ flowchart TD
     Core_Traefik -- "Routes Traffic To" --> Applications;
     Applications -- "Authenticate Via" --> App_Keycloak;
     Applications -- "Read/Write Data" --> GCP_Firestore;
-
-    %% --- Apply Styles ---
-    class External_APIs external;
-    class Ext_Aircall,Ext_Guesty external;
-    class Edge_Layer,Cloudflare,CF_DNS,CF_Workers,CF_R2,CF_KV,CF_AircallWorker,CF_GuestyWorker,CF_LLMWorker cloudflare;
-    class Vercel,Vercel_SecretsUI vercel;
-    class Hetzner,Node1,Node2,Node3 hetzner;
-    class HZ_Firewall firewall;
-    class Swarm swarm;
-    class Core_Traefik,Core_Services,Core_SeaweedFS,Core_Netdata core;
-    class Applications,App_RocketChat,App_MongoDB,App_Keycloak apps;
-    class GCP,GCP_Firestore,GCP_Scheduler,GCP_BackupFunc,GCP_VectorizeFunc,GCP_PubSub gcp;
-    class AI_Services ai;
-    class Qdrant qdrant;
-    class Groq groq;
 ```
