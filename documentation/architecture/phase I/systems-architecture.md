@@ -76,7 +76,6 @@ flowchart TD
         Groq("Groq LLM Inference"):::nodeGroq
     end
 
-    %% --- Top Level Connections ---
     External_APIs --> Cloudflare_Services;
     Vercel_Service --> Cloudflare_Services;
     Cloudflare_Services --> GCP_Services;
@@ -87,7 +86,6 @@ flowchart TD
     Hetzner --> Cloudflare_Services;
     Hetzner --> AI_Services;
 
-    %% --- Detailed Flows ---
     CF_DNS --> Core_Traefik;
     Vercel_SecretsUI -- "Manages Secrets --> KV" --> CF_KV;
     Ext_Aircall -- "Webhook" --> CF_AircallWorker;
@@ -99,28 +97,23 @@ flowchart TD
     App_MongoDB -- "Change Stream" --> GCP_PubSub;
     GCP_PubSub -- "Trigger" --> GCP_VectorizeFunc;
 
-    %% Backup Flow Corrected
     GCP_Scheduler -- "Trigger" --> GCP_BackupFunc;
     GCP_BackupFunc -- "Create Server" --> HZ_Backup_Server;
     GCP_BackupFunc -- "Log Status" --> GCP_Firestore;
     HZ_Backup_Server -- "Read Volumes" --> Core_SeaweedFS;
     HZ_Backup_Server -- "Upload Backup" --> CF_R2;
 
-    %% LLM Query Flow
     App_RocketChat -- "User Query --> Webhook" --> CF_LLMWorker;
-    CF_LLMWorker -- "1. Get Context" --> Qdrant;
-    CF_LLMWorker -- "2. Generate" --> Groq;
+    CF_LLMWorker -- "1 Get Context" --> Qdrant;
+    CF_LLMWorker -- "2 Generate" --> Groq;
     Groq -- "LLM Response" --> CF_LLMWorker;
-    CF_LLMWorker -- "3. Send Response" --> App_RocketChat;
-    CF_LLMWorker -- "4. Store Q&A?" --> GCP_Firestore;
+    CF_LLMWorker -- "3 Send Response" --> App_RocketChat;
+    CF_LLMWorker -- "4 Store Q&A?" --> GCP_Firestore;
 
-    %% Internal Hetzner Flow
     Core_Traefik --> Applications;
     Applications -- "Auth Via" --> App_Keycloak;
     Applications -- "R/W App Data" --> GCP_Firestore;
 
-
-    %% --- Apply Subgraph Styles ---
     class External_APIs sgExternal;
     class Cloudflare_Services sgCloudflare;
     class Vercel_Service sgVercel;
