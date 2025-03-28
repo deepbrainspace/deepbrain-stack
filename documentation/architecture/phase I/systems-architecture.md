@@ -110,7 +110,7 @@ flowchart TD
     %% Internal Hetzner Flow
     Core_Traefik --> Applications;
     Applications -- "Auth Via" --> App_Keycloak;
-    Applications -- "R/W App Data" --> GCP_Firestore; %% Direct Firestore use
+    Applications -- "R/W App Data" --> GCP_Firestore;
     %% Implicit: Apps use Core_SeaweedFS & App_MongoDB
 
     %% --- Apply Subgraph Styles ---
