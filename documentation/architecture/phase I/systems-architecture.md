@@ -1,49 +1,43 @@
 ```mermaid
 graph TD
-    %% Title
-    %% System Architecture (Revised)
+    %% System Architecture (Revised - Attempt 2)
 
-    %% Define Styles
+    %% Define Styles (ALL AT THE TOP)
     classDef cloudflare fill:#F6821F,color:white;
     classDef hetzner fill:#D50C2D,color:white;
     classDef firewall fill:#D50C2D,color:white,stroke-width:4px,stroke-dasharray: 5 5;
     classDef gcp fill:#4285F4,color:white;
     classDef vercel fill:#000000,color:white;
     classDef external fill:#666666,color:white;
-    classDef qdrant fill:#656666,color:white;
-    classDef groq fill:#666366,color:white;
+    classDef qdrant fill:#656666,color:white; // Style for Qdrant node
+    classDef groq fill:#666366,color:white;   // Style for Groq node
     classDef swarm fill:#2496ED,color:white;
-    classDef core fill:#2496ED,color:white,stroke-dasharray: 3 3;
-    classDef apps fill:#2496ED,color:white,stroke-dasharray: 3 3;
-    classDef ai fill:#9C27B0,color:white;
+    classDef core fill:#ADD8E6,color:black;   // Style for Core Hetzner Services
+    classDef apps fill:#E6E6FA,color:black;   // Style for Apps on Hetzner
+    classDef ai fill:#9C27B0,color:white;     // Style for AI Services subgraph
 
     %% External Inputs / Edge Layer
     subgraph External_APIs [External APIs]
         direction LR
-        Ext_Aircall["Aircall API"]
-        Ext_Guesty["Guesty API"]
+        Ext_Aircall["Aircall API"]:::external
+        Ext_Guesty["Guesty API"]:::external
     end
-    class Ext_Aircall, Ext_Guesty external;
 
     subgraph Edge_Layer [Cloudflare & Vercel]
         direction LR
         subgraph Cloudflare
-           CF_DNS["DNS / Proxy"]
-           CF_Workers["Workers"]
-           CF_R2["R2 (Backup Storage)"]
-           CF_KV["KV (Secrets Data)"]
+           CF_DNS["DNS / Proxy"]:::cloudflare
+           CF_Workers["Workers (Generic)"]:::cloudflare
+           CF_R2["R2 (Backup Storage)"]:::cloudflare
+           CF_KV["KV (Secrets Data)"]:::cloudflare
            CF_AircallWorker["Aircall Webhook Worker"]:::cloudflare
            CF_GuestyWorker["Guesty Webhook Worker"]:::cloudflare
            CF_LLMWorker["LLM Query Worker"]:::cloudflare
         end
         subgraph Vercel
-            Vercel_SecretsUI["Secrets UI"]
+            Vercel_SecretsUI["Secrets UI"]:::vercel
         end
     end
-    classDef cloudflare fill:#F6821F,color:white;
-    class Cloudflare, CF_DNS, CF_Workers, CF_R2, CF_KV cloudflare;
-    classDef vercel fill:#000000,color:white;
-    class Vercel, Vercel_SecretsUI vercel;
 
     %% Core Infrastructure (Hetzner)
     subgraph Hetzner [Hetzner Cloud]
@@ -71,40 +65,28 @@ graph TD
             end
         end
     end
-    classDef hetzner fill:#D50C2D,color:white;
-    class Hetzner, HZ_Firewall hetzner;
-    classDef swarm fill:#2496ED,color:white;
-    class Swarm, Node1, Node2, Node3 swarm;
-    classDef core fill:#ADD8E6,color:black;
-    class Core_Traefik, Core_Services, Core_SeaweedFS, Core_Netdata core;
-    classDef apps fill:#E6E6FA,color:black;
-    class Applications, App_RocketChat, App_MongoDB, App_Keycloak apps;
-
+    class HZ_Firewall firewall; % Apply firewall style to the zone subgraph
 
     %% Backend Services (GCP)
     subgraph GCP [GCP Services]
         direction TB
-        GCP_Firestore["Firestore (App Data / Status)"]
-        GCP_Scheduler["Cloud Scheduler (Triggers)"]
-        GCP_BackupFunc["Backup Function"]
-        GCP_VectorizeFunc["Vectorize Function"]
-        GCP_PubSub["Pub/Sub (Events)"]
+        GCP_Firestore["Firestore (App Data / Status)"]:::gcp
+        GCP_Scheduler["Cloud Scheduler (Triggers)"]:::gcp
+        GCP_BackupFunc["Backup Function"]:::gcp
+        GCP_VectorizeFunc["Vectorize Function"]:::gcp
+        GCP_PubSub["Pub/Sub (Events)"]:::gcp
     end
-    classDef gcp fill:#4285F4,color:white;
-    class GCP, GCP_Firestore, GCP_Scheduler, GCP_BackupFunc, GCP_VectorizeFunc, GCP_PubSub gcp;
-
 
     %% AI Services (Managed)
     subgraph AI_Services [Managed AI Services]
         direction LR
-        Qdrant["Qdrant Cloud (Vector DB)"]
-        Groq["Groq Cloud (LLM Inference)"]
+        Qdrant["Qdrant Cloud (Vector DB)"]:::qdrant
+        Groq["Groq Cloud (LLM Inference)"]:::groq
     end
-    classDef ai fill:#9C27B0,color:white;
-    class AI_Services, Qdrant, Groq ai;
+    class AI_Services ai; % Style the AI Services subgraph
 
 
-    %% Define Primary Flows / Connections
+    %% --- Define Primary Flows / Connections ---
 
     %% Ingress Flow
     CF_DNS --> Core_Traefik;
@@ -115,9 +97,9 @@ graph TD
     CF_AircallWorker -- "Store Transformed Data" --> GCP_Firestore;
     CF_GuestyWorker -- "Store Transformed Data" --> GCP_Firestore;
     GCP_Firestore -- "Trigger (on write)" --> GCP_VectorizeFunc;
-    %% Alternate RocketChat Data Ingestion (via Listener not shown explicitly, triggers PubSub)
-    App_MongoDB -- "Change Stream (Implied Listener)" --> GCP_PubSub
-    GCP_PubSub -- "Trigger" --> GCP_VectorizeFunc
+    %% Alternate RocketChat Data Ingestion (via Listener triggering PubSub)
+    App_MongoDB -- "Change Stream (Implied Listener)" --> GCP_PubSub;
+    GCP_PubSub -- "Trigger" --> GCP_VectorizeFunc;
     GCP_VectorizeFunc -- "Vectorize & Upsert" --> Qdrant;
 
     %% LLM Query Flow
@@ -129,8 +111,8 @@ graph TD
 
     %% Backup Flow
     GCP_Scheduler -- "Trigger" --> GCP_BackupFunc;
-    GCP_BackupFunc -- "Orchestrates Hetzner Server Creation/Snapshot" --> Hetzner;
-    Hetzner -- "Stores Backup via Restic (Implied)" --> CF_R2;
+    GCP_BackupFunc -- "Orchestrates Hetzner Server Creation/Snapshot" --> Hetzner; %% Simplified interaction point
+    Hetzner -- "Stores Backup via Restic (Implied Process)" --> CF_R2; %% Simplified interaction point
     GCP_BackupFunc -- "Logs Status" --> GCP_Firestore;
 
     %% Secrets Management Flow
@@ -140,10 +122,5 @@ graph TD
     %% General Service Connections
     Core_Traefik -- "Routes Traffic To" --> Applications;
     Applications -- "Authenticate Via" --> App_Keycloak;
-    Applications -- "Read/Write Data" --> GCP_Firestore %% Direct interaction besides webhook triggers
-
-
-    %% Apply Styles to Subgraphs/Nodes not covered by defaults
-    classDef firewall fill:#D50C2D,color:white,stroke-width:4px,stroke-dasharray: 5 5;
-    class HZ_Firewall firewall;
+    Applications -- "Read/Write Data" --> GCP_Firestore; %% Direct interaction besides webhook triggers
 ```
