@@ -18,13 +18,13 @@ flowchart TD
     classDef nodeGroq fill:#FFEBEE,stroke:#FF4081;
     classDef nodeQdrant fill:#E0F7FA,stroke:#00BCD4;
 
-    subgraph External_APIs [External APIs]:::sgExternal
+    subgraph External_APIs [External APIs]
         direction LR
         Ext_Aircall("Aircall API"):::nodeExternal
         Ext_Guesty("Guesty API"):::nodeExternal
     end
 
-    subgraph Cloudflare_Services [Cloudflare]:::sgCloudflare
+    subgraph Cloudflare_Services [Cloudflare]
         CF_DNS["DNS / Proxy"]:::nodeCloudflare
         CF_R2[("R2 Storage")]:::nodeDB
         CF_KV[("KV Secrets")]:::nodeDB
@@ -33,11 +33,11 @@ flowchart TD
         CF_LLMWorker("LLM Query Worker"):::nodeCloudflare
     end
 
-    subgraph Vercel_Service [Vercel]:::sgVercel
+    subgraph Vercel_Service [Vercel]
         Vercel_SecretsUI["Secrets UI"]:::nodeVercel
     end
 
-    subgraph GCP_Services [GCP Services]:::sgGCP
+    subgraph GCP_Services [GCP Services]
         GCP_Scheduler["Cloud Scheduler"]:::nodeGCP
         GCP_BackupFunc("Backup Function"):::nodeGCP
         GCP_VectorizeFunc("Vectorize Function"):::nodeGCP
@@ -45,8 +45,8 @@ flowchart TD
         GCP_Firestore[("Firestore DB")]:::nodeDB
     end
 
-    subgraph Hetzner_Infra [Core Infrastructure - Hetzner]:::sgHetzner
-        subgraph HZ_Firewall [Firewall Zone]:::sgFirewall
+    subgraph Hetzner_Infra [Core Infrastructure - Hetzner]
+        subgraph HZ_Firewall [Firewall Zone]
             Core_Traefik["Traefik Ingress"]:::nodeHetznerCore
             subgraph Swarm [Docker Swarm Cluster]
                 Node1["Node 1"]:::nodeHetznerSwarm
@@ -65,7 +65,7 @@ flowchart TD
         end
     end
 
-    subgraph AI_Services [Managed AI Services]:::sgAI
+    subgraph AI_Services [Managed AI Services]
         direction LR
         Qdrant[("Qdrant Vector DB")]:::nodeQdrant
         Groq("Groq LLM Inference"):::nodeGroq
@@ -104,4 +104,11 @@ flowchart TD
     Core_Traefik --> Applications;
     Applications -- "Auth Via" --> App_Keycloak;
     Applications -- "R/W App Data" --> GCP_Firestore;
-```
+
+    class External_APIs sgExternal;
+    class Cloudflare_Services sgCloudflare;
+    class Vercel_Service sgVercel;
+    class GCP_Services sgGCP;
+    class Hetzner_Infra sgHetzner;
+    class HZ_Firewall sgFirewall;
+    class AI_Services sgAI;
