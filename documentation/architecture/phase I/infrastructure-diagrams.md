@@ -1,4 +1,5 @@
 ```mermaid
+
 graph TD
     %% System Architecture (Revised - Attempt 4)
 
@@ -63,7 +64,7 @@ graph TD
             end
         end
     end
-    class HZ_Firewall firewall; %% Removed inline comment here
+    class HZ_Firewall firewall; 
 
     subgraph GCP [GCP Services]
         direction TB
@@ -79,7 +80,7 @@ graph TD
         Qdrant["Qdrant Cloud (Vector DB)"]:::qdrant
         Groq["Groq Cloud (LLM Inference)"]:::groq
     end
-    class AI_Services ai; %% Removed inline comment here
+    class AI_Services ai; 
 
 
     %% --- Define Primary Flows / Connections ---
