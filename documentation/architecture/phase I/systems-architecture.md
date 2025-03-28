@@ -6,6 +6,7 @@ flowchart TD
     classDef sgGCP fill:#E3F2FD,stroke:#4285F4;
     classDef sgHetzner fill:#F5F5F5,stroke:#D50C2D;
     classDef sgFirewall fill:#FDEDE8,stroke:#D50C2D,stroke-dasharray: 5 5;
+    classDef sgPrivateNetwork fill:#EEEEEE,stroke:#777777;
     classDef sgAI fill:#F3E5F5,stroke:#9C27B0;
     classDef nodeExternal fill:#FFFFFF,stroke:#AAAAAA;
     classDef nodeCloudflare fill:#FFF3E0,stroke:#F38020;
@@ -14,6 +15,7 @@ flowchart TD
     classDef nodeHetznerCore fill:#E8F5E9,stroke:#4CAF50;
     classDef nodeHetznerApp fill:#E1F5FE,stroke:#03A9F4;
     classDef nodeHetznerSwarm fill:#FFFFFF,stroke:#2496ED;
+    classDef nodeHetznerBackup fill:#FFF9C4, stroke:#FFB300;
     classDef nodeDB fill:#FFFFE0,stroke:#BDBDBD;
     classDef nodeGroq fill:#FFEBEE,stroke:#FF4081;
     classDef nodeQdrant fill:#E0F7FA,stroke:#00BCD4;
@@ -45,9 +47,11 @@ flowchart TD
         GCP_Firestore[("Firestore DB")]:::nodeDB
     end
 
-    subgraph Hetzner_Infra [Core Infrastructure - Hetzner]
+    subgraph Hetzner [Hetzner Cloud]
         subgraph HZ_Firewall [Firewall Zone]
+          subgraph HZ_Private_Network [Private Network]
             Core_Traefik["Traefik Ingress"]:::nodeHetznerCore
+            HZ_Backup_Server["Temp Backup Server"]:::nodeHetznerBackup
             subgraph Swarm [Docker Swarm Cluster]
                 Node1["Node 1"]:::nodeHetznerSwarm
                 Node2["Node 2"]:::nodeHetznerSwarm
@@ -62,6 +66,7 @@ flowchart TD
                    App_Keycloak["Keycloak Auth"]:::nodeHetznerApp
                 end
             end
+          end
         end
     end
 
@@ -71,16 +76,18 @@ flowchart TD
         Groq("Groq LLM Inference"):::nodeGroq
     end
 
+    %% --- Top Level Connections ---
     External_APIs --> Cloudflare_Services;
     Vercel_Service --> Cloudflare_Services;
     Cloudflare_Services --> GCP_Services;
-    Cloudflare_Services --> Hetzner_Infra;
-    GCP_Services --> Hetzner_Infra;
+    Cloudflare_Services --> Hetzner;
+    GCP_Services --> Hetzner;
     GCP_Services --> AI_Services;
-    Hetzner_Infra --> GCP_Services;
-    Hetzner_Infra --> Cloudflare_Services;
-    Hetzner_Infra --> AI_Services;
+    Hetzner --> GCP_Services;
+    Hetzner --> Cloudflare_Services;
+    Hetzner --> AI_Services;
 
+    %% --- Detailed Flows ---
     CF_DNS --> Core_Traefik;
     Vercel_SecretsUI -- "Manages Secrets --> KV" --> CF_KV;
     Ext_Aircall -- "Webhook" --> CF_AircallWorker;
@@ -91,24 +98,34 @@ flowchart TD
     GCP_VectorizeFunc -- "Vectorize/Upsert" --> Qdrant;
     App_MongoDB -- "Change Stream" --> GCP_PubSub;
     GCP_PubSub -- "Trigger" --> GCP_VectorizeFunc;
+
+    %% Backup Flow Corrected
     GCP_Scheduler -- "Trigger" --> GCP_BackupFunc;
-    GCP_BackupFunc -- "Orchestrate" --> Hetzner_Infra;
+    GCP_BackupFunc -- "Create Server" --> HZ_Backup_Server;
     GCP_BackupFunc -- "Log Status" --> GCP_Firestore;
-    Hetzner_Infra -- "Store Backup --> R2" --> CF_R2;
+    HZ_Backup_Server -- "Read Volumes" --> Core_SeaweedFS;
+    HZ_Backup_Server -- "Upload Backup" --> CF_R2;
+
+    %% LLM Query Flow
     App_RocketChat -- "User Query --> Webhook" --> CF_LLMWorker;
     CF_LLMWorker -- "1. Get Context" --> Qdrant;
     CF_LLMWorker -- "2. Generate" --> Groq;
     Groq -- "LLM Response" --> CF_LLMWorker;
     CF_LLMWorker -- "3. Send Response" --> App_RocketChat;
     CF_LLMWorker -- "4. Store Q&A?" --> GCP_Firestore;
+
+    %% Internal Hetzner Flow
     Core_Traefik --> Applications;
     Applications -- "Auth Via" --> App_Keycloak;
     Applications -- "R/W App Data" --> GCP_Firestore;
 
+
+    %% --- Apply Subgraph Styles ---
     class External_APIs sgExternal;
     class Cloudflare_Services sgCloudflare;
     class Vercel_Service sgVercel;
     class GCP_Services sgGCP;
-    class Hetzner_Infra sgHetzner;
+    class Hetzner sgHetzner;
     class HZ_Firewall sgFirewall;
+    class HZ_Private_Network sgPrivateNetwork;
     class AI_Services sgAI;
