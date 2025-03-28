@@ -1,22 +1,23 @@
 ```mermaid
 graph TD
-    %% System Architecture (Revised - Attempt 2)
+    %% System Architecture (Revised - Attempt 3)
 
-    %% Define Styles (ALL AT THE TOP)
+    %% Define Styles
     classDef cloudflare fill:#F6821F,color:white;
     classDef hetzner fill:#D50C2D,color:white;
     classDef firewall fill:#D50C2D,color:white,stroke-width:4px,stroke-dasharray: 5 5;
     classDef gcp fill:#4285F4,color:white;
     classDef vercel fill:#000000,color:white;
     classDef external fill:#666666,color:white;
-    classDef qdrant fill:#656666,color:white; // Style for Qdrant node
-    classDef groq fill:#666366,color:white;   // Style for Groq node
+    classDef qdrant fill:#656666,color:white;
+    classDef groq fill:#666366,color:white;
     classDef swarm fill:#2496ED,color:white;
-    classDef core fill:#ADD8E6,color:black;   // Style for Core Hetzner Services
-    classDef apps fill:#E6E6FA,color:black;   // Style for Apps on Hetzner
-    classDef ai fill:#9C27B0,color:white;     // Style for AI Services subgraph
+    classDef core fill:#ADD8E6,color:black;
+    classDef apps fill:#E6E6FA,color:black;
+    classDef ai fill:#9C27B0,color:white;
 
-    %% External Inputs / Edge Layer
+    %% --- Structure Definition ---
+
     subgraph External_APIs [External APIs]
         direction LR
         Ext_Aircall["Aircall API"]:::external
@@ -39,7 +40,6 @@ graph TD
         end
     end
 
-    %% Core Infrastructure (Hetzner)
     subgraph Hetzner [Hetzner Cloud]
         subgraph HZ_Firewall [Firewall Zone]
             direction TB
@@ -49,7 +49,6 @@ graph TD
                 Node1["Node 1"]:::swarm
                 Node2["Node 2"]:::swarm
                 Node3["Node 3"]:::swarm
-                %% Note: Internal Swarm traffic implied between nodes
 
                 subgraph Core_Services [Core Services]
                    Core_SeaweedFS["SeaweedFS (Storage)"]:::core
@@ -60,14 +59,12 @@ graph TD
                    App_RocketChat["RocketChat"]:::apps
                    App_MongoDB["MongoDB (for RocketChat)"]:::apps
                    App_Keycloak["Keycloak (Auth)"]:::apps
-                   %% Note: Apps use SeaweedFS for persistent storage
                 end
             end
         end
     end
     class HZ_Firewall firewall; % Apply firewall style to the zone subgraph
 
-    %% Backend Services (GCP)
     subgraph GCP [GCP Services]
         direction TB
         GCP_Firestore["Firestore (App Data / Status)"]:::gcp
@@ -77,7 +74,6 @@ graph TD
         GCP_PubSub["Pub/Sub (Events)"]:::gcp
     end
 
-    %% AI Services (Managed)
     subgraph AI_Services [Managed AI Services]
         direction LR
         Qdrant["Qdrant Cloud (Vector DB)"]:::qdrant
@@ -97,30 +93,28 @@ graph TD
     CF_AircallWorker -- "Store Transformed Data" --> GCP_Firestore;
     CF_GuestyWorker -- "Store Transformed Data" --> GCP_Firestore;
     GCP_Firestore -- "Trigger (on write)" --> GCP_VectorizeFunc;
-    %% Alternate RocketChat Data Ingestion (via Listener triggering PubSub)
-    App_MongoDB -- "Change Stream (Implied Listener)" --> GCP_PubSub;
+    App_MongoDB -- "Change Stream --> PubSub" --> GCP_PubSub; % Simplified label
     GCP_PubSub -- "Trigger" --> GCP_VectorizeFunc;
     GCP_VectorizeFunc -- "Vectorize & Upsert" --> Qdrant;
 
     %% LLM Query Flow
-    App_RocketChat -- "User Query (via Webhook)" --> CF_LLMWorker;
+    App_RocketChat -- "User Query --> Webhook" --> CF_LLMWorker; % Simplified label
     CF_LLMWorker -- "1. Retrieve Context" --> Qdrant;
     CF_LLMWorker -- "2. Generate Response" --> Groq;
     CF_LLMWorker -- "3. Send Response" --> App_RocketChat;
-    CF_LLMWorker -- "4. Store Q&A (Optional)" --> GCP_Firestore; %% Feedback loop for potential re-vectorization
+    CF_LLMWorker -- "4. Store Q&A (Optional)" --> GCP_Firestore;
 
     %% Backup Flow
     GCP_Scheduler -- "Trigger" --> GCP_BackupFunc;
-    GCP_BackupFunc -- "Orchestrates Hetzner Server Creation/Snapshot" --> Hetzner; %% Simplified interaction point
-    Hetzner -- "Stores Backup via Restic (Implied Process)" --> CF_R2; %% Simplified interaction point
+    GCP_BackupFunc -- "Orchestrates Hetzner Backup" --> Hetzner; % Simplified interaction point label
+    Hetzner -- "Stores Backup --> R2" --> CF_R2; % Simplified interaction point label
     GCP_BackupFunc -- "Logs Status" --> GCP_Firestore;
 
     %% Secrets Management Flow
-    Vercel_SecretsUI -- "Manages Secrets Data In" --> CF_KV;
-    %% Note: CF Workers / Other services access KV as needed (connection not explicitly drawn to reduce clutter)
+    Vercel_SecretsUI -- "Manages Secrets --> KV" --> CF_KV; % Simplified label
 
     %% General Service Connections
     Core_Traefik -- "Routes Traffic To" --> Applications;
     Applications -- "Authenticate Via" --> App_Keycloak;
-    Applications -- "Read/Write Data" --> GCP_Firestore; %% Direct interaction besides webhook triggers
+    Applications -- "Read/Write Data" --> GCP_Firestore;
 ```
