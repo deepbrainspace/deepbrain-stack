@@ -1,20 +1,20 @@
 ```mermaid
 flowchart TD
-    %% System Architecture - Flowchart Style (Revised Layout & Styles)
+    %% System Architecture - Flowchart Style (Revised Layout & Styles V3)
 
     %% --- Define Styles (Lighter Backgrounds) ---
-    classDef cloudflare fill:#F38020,color:white,stroke:#F38020;        
-    classDef hetzner fill:#E8E8E8,color:black,stroke:#D50C2D;            
-    classDef firewall fill:#FAE0E3,color:black,stroke:#D50C2D,stroke-dasharray: 5 5; 
-    classDef gcp fill:#E3F2FD,color:black,stroke:#4285F4;                
-    classDef vercel fill:#F0F0F0,color:black,stroke:#000000;             
-    classDef external fill:#DCDCDC,color:black,stroke:#666666;           
-    classDef qdrant fill:#E0FFFF,color:black,stroke:#00C4CC;            
-    classDef groq fill:#FFE0F0,color:black,stroke:#FF4081;              
-    classDef swarm fill:#D6ECF8,color:black,stroke:#2496ED;             
-    classDef core fill:#F0F8FF,color:black,stroke:#2496ED;              
-    classDef apps fill:#F8F8FF,color:black,stroke:#2496ED;               
-    classDef ai fill:#F3E5F5,color:black,stroke:#9C27B0;                 
+    classDef cloudflare fill:#F38020,color:white,stroke:#F38020;
+    classDef hetzner fill:#E8E8E8,color:black,stroke:#D50C2D;
+    classDef firewall fill:#FAE0E3,color:black,stroke:#D50C2D,stroke-dasharray: 5 5;
+    classDef gcp fill:#E3F2FD,color:black,stroke:#4285F4;
+    classDef vercel fill:#F0F0F0,color:black,stroke:#000000;
+    classDef external fill:#DCDCDC,color:black,stroke:#666666;
+    classDef qdrant fill:#E0FFFF,color:black,stroke:#00C4CC;
+    classDef groq fill:#FFE0F0,color:black,stroke:#FF4081;
+    classDef swarm fill:#D6ECF8,color:black,stroke:#2496ED;
+    classDef core fill:#F0F8FF,color:black,stroke:#2496ED;
+    classDef apps fill:#F8F8FF,color:black,stroke:#2496ED;
+    classDef ai fill:#F3E5F5,color:black,stroke:#9C27B0;
 
 
     %% --- Structure Definition (Top-Down Arrangement) ---
@@ -43,11 +43,11 @@ flowchart TD
 
 
     subgraph Row2 [Core Infrastructure - Hetzner]
-      Hetzner[Hetzner Cloud]:::hetzner
-        subgraph HZ_Firewall [Firewall Zone]:::firewall
+      subgraph Hetzner [Hetzner Cloud]
+        subgraph HZ_Firewall [Firewall Zone]
             direction TB
             Core_Traefik["Traefik (Ingress)"]:::core
-            subgraph Swarm [Docker Swarm Cluster]:::swarm
+            subgraph Swarm [Docker Swarm Cluster]
                 direction TB
                 Node1["Node 1"]:::swarm
                 Node2["Node 2"]:::swarm
@@ -65,23 +65,26 @@ flowchart TD
                 end
             end
         end
+      end
     end
 
     subgraph Row3 [Backend Services - GCP]
-      GCP[GCP Services]:::gcp
+      subgraph GCP [GCP Services]
         direction TB
         GCP_Firestore["Firestore (App Data / Status)"]:::gcp
         GCP_Scheduler["Cloud Scheduler (Triggers)"]:::gcp
         GCP_BackupFunc["Backup Function"]:::gcp
         GCP_VectorizeFunc["Vectorize Function"]:::gcp
         GCP_PubSub["Pub/Sub (Events)"]:::gcp
+      end
     end
 
     subgraph Row4 [Managed AI Services]
-      AI_Services[AI Services]:::ai
+      subgraph AI_Services [AI Services]
         direction LR
         Qdrant["Qdrant Cloud (Vector DB)"]:::qdrant
         Groq["Groq Cloud (LLM Inference)"]:::groq
+      end
     end
 
 
@@ -109,4 +112,14 @@ flowchart TD
     Core_Traefik -- "Routes Traffic To" --> Applications;
     Applications -- "Authenticate Via" --> App_Keycloak;
     Applications -- "Read/Write Data" --> GCP_Firestore;
+
+    %% --- Apply Subgraph Styles ---
+    class Hetzner hetzner;
+    class HZ_Firewall firewall;
+    class Swarm swarm;
+    class GCP gcp;
+    class AI_Services ai;
+    class External_APIs external;
+    class Cloudflare_Services cloudflare;
+    class Vercel_Service vercel;
 ```
