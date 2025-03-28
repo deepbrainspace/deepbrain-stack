@@ -1,122 +1,358 @@
+# Infrastructure Architecture and Process Flows
+
+## System Architecture
+
 ```mermaid
-
 graph TD
-    %% System Architecture (Revised - Attempt 4)
+    %% Arrange in a more balanced horizontal layout
+    
+    %% Top - Vercel and KV Store
+    subgraph "Vercel"
+        Vercel_SecretsUI["Secrets UI"]
+    end
+    
+    %% KV Store moved near Vercel at the top
+    subgraph "Cloudflare"
+        CF_KV["KV Store"]
+        CF_DNS["DNS"]
+        CF_R2["R2 Storage"]
+        CF_Workers["Workers"]
+        CF_AircallWorker["Aircall Webhook Worker"]
+        CF_GuestyWorker["Guesty Webhook Worker"]
+        CF_LLMWorker["LLM Query Worker"]
+    end
+    
+    %% Left side - External Services
+    subgraph "External Services"
+        Aircall["Aircall API"]
+        Guesty["Guesty API"]
+    end
+    
+    %% Center - Hetzner Cloud with Firewall wrapper
+    subgraph "Hetzner Cloud"
+        %% Wrap the entire network in a Firewall subgraph
+        subgraph "HZ_Firewall_Zone" [Firewall]
+            subgraph "HZ_Network"
+                subgraph "Docker Swarm Cluster"
+                    DS_Node1["Node 1<br/>Manager + Worker"]
+                    DS_Node2["Node 2<br/>Manager + Worker"]
+                    DS_Node3["Node 3<br/>Manager + Worker"]
+                    
+                    subgraph "Core Services"
+                        Core_Traefik["Traefik"]
+                        Core_SeaweedFS["SeaweedFS"]
+                        Core_Netdata["Netdata"]
+                    end
+                    
+                    subgraph "Applications"
+                        subgraph "RocketChat"
+                            App_RocketChat["RocketChat"]
+                            App_MongoDB["MongoDB"]
+                        end
+                        App_Keycloak["Keycloak"]
+                    end
+                end
+                
+                HZ_BackupSnapshot["Backup Server Snapshot"]
+            end
+        end
+    end
+    
+    %% Right side - GCP positioned to avoid overlap with Cloudflare
+    subgraph "GCP"
+        GCP_Firestore["Firestore"]
+        GCP_Scheduler["Cloud Scheduler"]
+        GCP_BackupFunction["Backup Function"]
+        GCP_VectorizeFunction["Vectorize Function"]
+    end
 
-    %% Define Styles
+    %% Far right - AI Services
+    subgraph "AI Services"
+        subgraph "Qdrant Cloud"
+            Qdrant["Vector DB"]
+        end
+        
+        subgraph "Groq Cloud"
+            Groq["Deepseek-Qwen-32b Inference"]
+        end
+    end
+
+    %% Network connections (solid lines)
+    CF_DNS -->|"DNS Resolution"| HZ_Firewall_Zone
+    CF_Workers -->|"API Requests"| HZ_Firewall_Zone
+    Core_Traefik -->|"Ingress"| HZ_Firewall_Zone
+    
+    %% Swarm node connections (dashed lines)
+    DS_Node1 -.->|"Swarm Traffic"| DS_Node2
+    DS_Node2 -.->|"Swarm Traffic"| DS_Node3
+    DS_Node3 -.->|"Swarm Traffic"| DS_Node1
+    DS_Node2 -.->|"Swarm Traffic"| DS_Node1
+    DS_Node3 -.->|"Swarm Traffic"| DS_Node2
+    DS_Node1 -.->|"Swarm Traffic"| DS_Node3
+    
+    DS_Node1 -.->|"Network"| HZ_Network
+    DS_Node2 -.->|"Network"| HZ_Network
+    DS_Node3 -.->|"Network"| HZ_Network
+    HZ_Network -.->|"Network"| DS_Node1
+    HZ_Network -.->|"Network"| DS_Node2
+    HZ_Network -.->|"Network"| DS_Node3
+    
+    %% Storage connections (dotted lines)
+    Core_SeaweedFS -.->|"Storage"| App_RocketChat
+    App_RocketChat -.->|"Storage"| Core_SeaweedFS
+    Core_SeaweedFS -.->|"Storage"| App_MongoDB
+    App_MongoDB -.->|"Storage"| Core_SeaweedFS
+    Core_SeaweedFS -.->|"Storage"| App_Keycloak
+    App_Keycloak -.->|"Storage"| Core_SeaweedFS
+    
+    %% Backup connections - now going through firewall zone
+    GCP_BackupFunction -->|"Create"| HZ_Firewall_Zone
+    HZ_BackupSnapshot -->|"Store"| CF_R2
+    GCP_Scheduler -->|"Trigger"| GCP_BackupFunction
+    
+    %% External API connections (colored differently)
+    Aircall -->|"Webhook"| CF_AircallWorker
+    Guesty -->|"Webhook"| CF_GuestyWorker
+    
+    %% Data flow connections
+    CF_AircallWorker -->|"Store"| GCP_Firestore
+    CF_GuestyWorker -->|"Store"| GCP_Firestore
+    
+    GCP_Firestore -->|"Process"| GCP_VectorizeFunction
+    GCP_VectorizeFunction -.->|"Upsert"| Qdrant
+    
+    %% LLM flow connections
+    App_RocketChat -->|"Query"| CF_LLMWorker
+    CF_LLMWorker -.->|"Search"| Qdrant
+    CF_LLMWorker -.->|"Generate"| Groq
+    CF_LLMWorker -->|"Response"| App_RocketChat
+    
+    %% Added direct upsert from LLM Worker to Qdrant
+    CF_LLMWorker -.->|"Upsert"| Qdrant
+    
+    App_RocketChat -->|"Data"| GCP_Firestore
+    GCP_Firestore -->|"Data"| App_RocketChat
+    
+    %% Vercel connection to KV Store instead of Workers
+    Vercel_SecretsUI -->|"Manage Secrets"| CF_KV
+    CF_KV -->|"Access"| Vercel_SecretsUI
+    
     classDef cloudflare fill:#F6821F,color:white;
     classDef hetzner fill:#D50C2D,color:white;
-    classDef firewall fill:#D50C2D,color:white,stroke-width:4px,stroke-dasharray: 5 5;
+    classDef firewall fill:#D50C2D,color:white,stroke-width:4px;
     classDef gcp fill:#4285F4,color:white;
     classDef vercel fill:#000000,color:white;
     classDef external fill:#666666,color:white;
     classDef qdrant fill:#656666,color:white;
     classDef groq fill:#666366,color:white;
     classDef swarm fill:#2496ED,color:white;
-    classDef core fill:#ADD8E6,color:black;
-    classDef apps fill:#E6E6FA,color:black;
-    classDef ai fill:#9C27B0,color:white;
+    classDef core fill:#2496ED,color:white,stroke-dasharray: 5 5;
+    classDef apps fill:#2496ED,color:white,stroke-dasharray: 5 5;
+    classDef network fill:#009688,color:white;
+    
+    %% Apply styles to nodes
+    class CF_DNS,CF_R2,CF_KV,CF_Workers,CF_AircallWorker,CF_GuestyWorker,CF_LLMWorker cloudflare;
+    class DS_Node1,DS_Node2,DS_Node3,HZ_BackupSnapshot hetzner;
+    class HZ_Firewall_Zone firewall;
+    class Core_SeaweedFS,Core_Traefik,Core_Netdata core;
+    class App_RocketChat,App_MongoDB,App_Keycloak apps;
+    class GCP_Firestore,GCP_Scheduler,GCP_BackupFunction,GCP_VectorizeFunction gcp;
+    class Vercel_SecretsUI vercel;
+    class Qdrant qdrant;
+    class Groq groq;
+    class Aircall,Guesty external;
+    class HZ_Network network;
+```
 
-    %% --- Structure Definition ---
+## Deployment Process Flow
 
-    subgraph External_APIs [External APIs]
-        direction LR
-        Ext_Aircall["Aircall API"]:::external
-        Ext_Guesty["Guesty API"]:::external
+```mermaid
+flowchart TD
+    A["Developer<br/>Commits Changes"] -->|"1.Push to Branch"| B["Create Pull Request"]
+    B --> |"2.Trigger CI"| C{"GitHub Actions<br/>PR Validation"}
+    C -->|"3a.Run Ansible Check Mode"| D["Generate Diff"]
+    C -->|"3b.Validate Functions"| E["Test Functions Locally"]
+    D --> |"4a.Add Results"| F["Post Diff to PR"]
+    E --> |"4b.Add Results"| F
+    F --> |"5.Review"| G{"PR Review"}
+    G -->|"6a.Approved"| H["Merge PR"]
+    G -->|"6b.Changes Requested"| I["Update PR"]
+    I --> |"7.Re-trigger CI"| C
+    H --> |"8.Trigger CD"| J{"GitHub Actions<br/>Deployment"}
+    J -->|"9.Run Terraform"| K["Provision/Update<br/>Infrastructure"]
+    K --> |"10.Configure"| L["Run Ansible<br/>Playbooks"]
+    L --> |"11.Deploy"| M["Deploy Serverless Functions"]
+    M --> |"12.Check"| N{"Deployment<br/>Successful?"}
+    N -->|"13a.Yes"| O["Verify Services"]
+    N -->|"13b.No"| P["Automatic Rollback"]
+    P --> |"14.Report"| Q["Create Issue<br/>for Failed Deployment"]
+    O -->|"15a.All Healthy"| R["Deployment Complete"]
+    O -->|"15b.Issues Detected"| S["Manual Intervention"]
+    S --> |"16.Fix"| T["Fix Issues"]
+    T --> |"17.Commit"| U["Update Repository"]
+    U --> |"18.Restart Process"| A
+```
+
+## Configuration Management Flow
+
+```mermaid
+flowchart TD
+    A["Git Repository"] --> |"1a.Secure"| B{"git-crypt"}
+    B -->|"2a.Encrypt"| C["Encrypted Secrets"]
+    B -->|"2b.Decrypt"| D["Decrypted Secrets"]
+    
+    A --> |"1b.Store"| E["Ansible Templates"]
+    A --> |"1c.Define"| F["Environment Variables"]
+    
+    subgraph "GitHub Actions"
+        G["Checkout Code"]
+        H["Decrypt Secrets"]
+        I["Process Templates"]
+        J["Deploy to Swarm"]
     end
+    
+    G --> |"3.Get"| H
+    H --> |"4.Provide"| I
+    I --> |"5.Execute"| J
+    
+    D --> |"6.Use"| H
+    E --> |"7a.Use"| I
+    F --> |"7b.Use"| I
+    
+    J --> |"8.Configure"| K["Docker Swarm"]
+    
+    K --> |"9a.Start"| L["Core Services"]
+    K --> |"9b.Start"| M["Applications"]
+    
+    classDef git fill:#F05033,color:white;
+    classDef actions fill:#2088FF,color:white;
+    classDef swarm fill:#2496ED,color:white;
+    
+    class A,B,C,D,E,F git;
+    class G,H,I,J actions;
+    class K,L,M swarm;
+```
 
-    subgraph Edge_Layer [Cloudflare & Vercel]
-        direction LR
-        subgraph Cloudflare
-           CF_DNS["DNS / Proxy"]:::cloudflare
-           CF_Workers["Workers (Generic)"]:::cloudflare
-           CF_R2["R2 (Backup Storage)"]:::cloudflare
-           CF_KV["KV (Secrets Data)"]:::cloudflare
-           CF_AircallWorker["Aircall Webhook Worker"]:::cloudflare
-           CF_GuestyWorker["Guesty Webhook Worker"]:::cloudflare
-           CF_LLMWorker["LLM Query Worker"]:::cloudflare
-        end
-        subgraph Vercel
-            Vercel_SecretsUI["Secrets UI"]:::vercel
-        end
-    end
+## Backup Process Flow
 
-    subgraph Hetzner [Hetzner Cloud]
-        subgraph HZ_Firewall [Firewall Zone]
-            direction TB
-            Core_Traefik["Traefik (Ingress)"]:::core
-            subgraph Swarm [Docker Swarm Cluster]
-                direction TB
-                Node1["Node 1"]:::swarm
-                Node2["Node 2"]:::swarm
-                Node3["Node 3"]:::swarm
+```mermaid
+flowchart TD
+    A["Google Cloud Scheduler"] -->|"1.Daily Trigger"| B["Backup Cloud Function"]
+    B --> |"2.Provision"| C["Create Server from Snapshot"]
+    C --> |"3.Initialize"| D["Server Boots with Ansible Configuration"]
+    
+    D --> |"4.Execute"| E["Restic Runs Backup Based on Configuration"]
+    E --> |"5.Store"| F["Upload to Cloudflare R2"]
+    
+    F --> |"6.Manage"| G["Apply Retention Policy"]
+    G -->|"7a.Daily"| H["Keep 7 Days"]
+    G -->|"7b.Weekly"| I["Keep 4 Weeks"]
+    G -->|"7c.Monthly"| J["Keep 12 Months"]
+    
+    E --> |"8.Record"| K["Update Status in Firestore"]
+    K --> |"9.Cleanup"| L["Self-Destruct Server"]
+    
+    M["Monitoring Checks Status"] --> |"10.Verify"| N{"Backup Successful?"}
+    N -->|"11a.Yes"| O["Log Success"]
+    N -->|"11b.No"| P["Alert Team"]
+    
+    classDef gcp fill:#4285F4,color:white;
+    classDef hetzner fill:#D50C2D,color:white;
+    classDef cloudflare fill:#F6821F,color:white;
+    classDef process fill:#4CAF50,color:white;
+    classDef decision fill:#9C27B0,color:white;
+    
+    class A,B gcp;
+    class C,D,E,L hetzner;
+    class F,G,H,I,J,O cloudflare;
+    class K,M process;
+    class N decision;
+    class P alert;
+```
 
-                subgraph Core_Services [Core Services]
-                   Core_SeaweedFS["SeaweedFS (Storage)"]:::core
-                   Core_Netdata["Netdata (Monitoring)"]:::core
-                end
+## Secrets Management Flow
 
-                subgraph Applications [Applications]
-                   App_RocketChat["RocketChat"]:::apps
-                   App_MongoDB["MongoDB (for RocketChat)"]:::apps
-                   App_Keycloak["Keycloak (Auth)"]:::apps
-                end
-            end
-        end
-    end
-    class HZ_Firewall firewall; 
+```mermaid
+flowchart TD
+    A["Developer"] -->|"1.Authenticate with GPG Key"| B["git-crypt"]
+    B -->|"2.Encrypt"| C["Encrypted Secrets<br/>in Repository"]
+    
+    D["GitHub Actions"] -->|"3.Provide Symmetric Key"| E["git-crypt unlock"]
+    E --> |"4.Decrypt"| F["Decrypted Secrets"]
+    
+    F --> |"5.Create"| G["Docker Secrets"]
+    G --> |"6.Inject into"| H["Docker Swarm Services"]
+    
+    I["Vercel Secrets UI"] --> |"7.Access"| J["View/Edit Secrets"]
+    J --> |"8.Commit Changes"| K["Update Repository"]
+    K --> |"9.Re-encrypt"| B
+    
+    classDef user fill:#1976D2,color:white;
+    classDef crypto fill:#FFC107,color:white;
+    classDef storage fill:#FF9800,color:white;
+    classDef service fill:#4CAF50,color:white;
+    
+    class A,I user;
+    class B,E crypto;
+    class C,F,G storage;
+    class D,H,J,K service;
+```
 
-    subgraph GCP [GCP Services]
-        direction TB
-        GCP_Firestore["Firestore (App Data / Status)"]:::gcp
-        GCP_Scheduler["Cloud Scheduler (Triggers)"]:::gcp
-        GCP_BackupFunc["Backup Function"]:::gcp
-        GCP_VectorizeFunc["Vectorize Function"]:::gcp
-        GCP_PubSub["Pub/Sub (Events)"]:::gcp
-    end
+## API Integration Flow
 
-    subgraph AI_Services [Managed AI Services]
-        direction LR
-        Qdrant["Qdrant Cloud (Vector DB)"]:::qdrant
-        Groq["Groq Cloud (LLM Inference)"]:::groq
-    end
-    class AI_Services ai; 
+```mermaid
+flowchart TD
+    A1["Aircall API"] -->|"1a.Send Webhook Event"| B1["Aircall Cloudflare Worker"]
+    A2["Guesty API"] -->|"1b.Send Webhook Event"| B2["Guesty Cloudflare Worker"]
+    
+    B1 -->|"2a.Validate & Transform"| C["Firestore Database"]
+    B2 -->|"2b.Validate & Transform"| C
+    
+    C -->|"3.Trigger on Document Write"| D["Vectorize Cloud Function"]
+    D -->|"4.Create Vector Representation"| E["Qdrant Vector Database"]
+    
+    classDef external fill:#666666,color:white;
+    classDef cloudflare fill:#F6821F,color:white;
+    classDef gcp fill:#4285F4,color:white;
+    classDef qdrant fill:#00C4CC,color:white;
+    
+    class A1,A2 external;
+    class B1,B2 cloudflare;
+    class C,D gcp;
+    class E qdrant;
+```
 
+## LLM Query Process Flow
 
-    %% --- Define Primary Flows / Connections ---
-
-    %% Ingress Flow
-    CF_DNS --> Core_Traefik;
-
-    %% Webhook Data Ingestion Flow
-    Ext_Aircall -- "Webhook" --> CF_AircallWorker;
-    Ext_Guesty -- "Webhook" --> CF_GuestyWorker;
-    CF_AircallWorker -- "Store Transformed Data" --> GCP_Firestore;
-    CF_GuestyWorker -- "Store Transformed Data" --> GCP_Firestore;
-    GCP_Firestore -- "Trigger (on write)" --> GCP_VectorizeFunc;
-    App_MongoDB -- "Change Stream --> PubSub" --> GCP_PubSub;
-    GCP_PubSub -- "Trigger" --> GCP_VectorizeFunc;
-    GCP_VectorizeFunc -- "Vectorize & Upsert" --> Qdrant;
-
-    %% LLM Query Flow
-    App_RocketChat -- "User Query --> Webhook" --> CF_LLMWorker;
-    CF_LLMWorker -- "1. Retrieve Context" --> Qdrant;
-    CF_LLMWorker -- "2. Generate Response" --> Groq;
-    CF_LLMWorker -- "3. Send Response" --> App_RocketChat;
-    CF_LLMWorker -- "4. Store Q&A (Optional)" --> GCP_Firestore;
-
-    %% Backup Flow
-    GCP_Scheduler -- "Trigger" --> GCP_BackupFunc;
-    GCP_BackupFunc -- "Orchestrates Hetzner Backup" --> Hetzner;
-    Hetzner -- "Stores Backup --> R2" --> CF_R2;
-    GCP_BackupFunc -- "Logs Status" --> GCP_Firestore;
-
-    %% Secrets Management Flow
-    Vercel_SecretsUI -- "Manages Secrets --> KV" --> CF_KV;
-
-    %% General Service Connections
-    Core_Traefik -- "Routes Traffic To" --> Applications;
-    Applications -- "Authenticate Via" --> App_Keycloak;
-    Applications -- "Read/Write Data" --> GCP_Firestore;
-
+```mermaid
+flowchart TD
+    A["RocketChat User"] -->|"1.Ask Question"| B["RocketChat"]
+    B -->|"2.Send Webhook"| C["LLM Query Cloudflare Worker"]
+    
+    C -->|"3.Query for Context"| D["Qdrant Vector Database"]
+    D -->|"4.Return Relevant Context"| C
+    
+    C -->|"5.Query with Context"| E["Groq LLM API"]
+    E -->|"6.Return Response"| C
+    
+    C -->|"7.Format Response"| B
+    B -->|"8.Display Answer"| A
+    
+    C -->|"9.Store Q&A"| F["Firestore"]
+    F -->|"10.Trigger Function"| G["Vectorize Function"]
+    G -->|"11.Update Vector DB"| D
+    
+    classDef user fill:#1976D2,color:white;
+    classDef app fill:#2496ED,color:white;
+    classDef cloudflare fill:#F6821F,color:white;
+    classDef qdrant fill:#00C4CC,color:white;
+    classDef groq fill:#FF4081,color:white;
+    classDef gcp fill:#4285F4,color:white;
+    
+    class A user;
+    class B app;
+    class C cloudflare;
+    class D qdrant;
+    class E groq;
+    class F,G gcp;
 ```

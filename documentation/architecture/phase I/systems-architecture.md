@@ -1,45 +1,53 @@
 ```mermaid
 flowchart TD
-    classDef cloudflare fill:#F6821F,color:white;
-    classDef hetzner fill:#D50C2D,color:white;
-    classDef firewall fill:#D50C2D,color:white,stroke-width:4px,stroke-dasharray: 5 5;
-    classDef gcp fill:#4285F4,color:white;
-    classDef vercel fill:#000000,color:white;
-    classDef external fill:#666666,color:white;
-    classDef qdrant fill:#656666,color:white;
-    classDef groq fill:#666366,color:white;
-    classDef swarm fill:#2496ED,color:white;
-    classDef core fill:#ADD8E6,color:black;
-    classDef apps fill:#E6E6FA,color:black;
-    classDef ai fill:#9C27B0,color:white;
+    %% System Architecture - Flowchart Style (Revised Layout & Styles)
 
-    subgraph External_APIs [External APIs]
-        direction LR
-        Ext_Aircall["Aircall API"]:::external
-        Ext_Guesty["Guesty API"]:::external
-    end
+    %% --- Define Styles (Lighter Backgrounds) ---
+    classDef cloudflare fill:#F38020,color:white,stroke:#F38020;        %% Cloudflare Orange (Text White)
+    classDef hetzner fill:#E8E8E8,color:black,stroke:#D50C2D;            %% Light Grey (Text Black), Hetzner Red Border
+    classDef firewall fill:#FAE0E3,color:black,stroke:#D50C2D,stroke-dasharray: 5 5; %% Light Red (Text Black), Hetzner Red Dashed Border
+    classDef gcp fill:#E3F2FD,color:black,stroke:#4285F4;                %% Light Blue (Text Black), GCP Blue Border
+    classDef vercel fill:#F0F0F0,color:black,stroke:#000000;              %% Very Light Grey (Text Black), Black Border
+    classDef external fill:#DCDCDC,color:black,stroke:#666666;            %% Lighter Grey (Text Black), Grey Border
+    classDef qdrant fill:#E0FFFF,color:black,stroke:#00C4CC;             %% Light Cyan (Text Black), Qdrant Cyan Border
+    classDef groq fill:#FFE0F0,color:black,stroke:#FF4081;               %% Light Pink (Text Black), Groq Pink Border
+    classDef swarm fill:#D6ECF8,color:black,stroke:#2496ED;              %% Lighter Blue (Text Black), Docker Blue Border
+    classDef core fill:#F0F8FF,color:black,stroke:#2496ED;               %% Alice Blue (Text Black), Docker Blue Border
+    classDef apps fill:#F8F8FF,color:black,stroke:#2496ED;               %% Ghost White (Text Black), Docker Blue Border
+    classDef ai fill:#F3E5F5,color:black,stroke:#9C27B0;                 %% Light Purple (Text Black), Purple Border
 
-    subgraph Edge_Layer [Cloudflare & Vercel]
+
+    %% --- Structure Definition (Top-Down Arrangement) ---
+
+    subgraph Row1 [External & Edge Services]
         direction LR
-        subgraph Cloudflare
-           CF_DNS["DNS / Proxy"]:::cloudflare
-           CF_Workers["Workers (Generic)"]:::cloudflare
-           CF_R2["R2 (Backup Storage)"]:::cloudflare
-           CF_KV["KV (Secrets Data)"]:::cloudflare
-           CF_AircallWorker["Aircall Webhook Worker"]:::cloudflare
-           CF_GuestyWorker["Guesty Webhook Worker"]:::cloudflare
-           CF_LLMWorker["LLM Query Worker"]:::cloudflare
+        subgraph External_APIs [External APIs]
+            Ext_Aircall["Aircall API"]:::external
+            Ext_Guesty["Guesty API"]:::external
         end
-        subgraph Vercel
+
+        subgraph Cloudflare_Services [Cloudflare]
+            CF_DNS["DNS / Proxy"]:::cloudflare
+            CF_Workers["Workers (Generic)"]:::cloudflare
+            CF_R2["R2 (Backup Storage)"]:::cloudflare
+            CF_KV["KV (Secrets Data)"]:::cloudflare
+            CF_AircallWorker["Aircall Webhook Worker"]:::cloudflare
+            CF_GuestyWorker["Guesty Webhook Worker"]:::cloudflare
+            CF_LLMWorker["LLM Query Worker"]:::cloudflare
+        end
+
+        subgraph Vercel_Service [Vercel]
             Vercel_SecretsUI["Secrets UI"]:::vercel
         end
     end
 
-    subgraph Hetzner [Hetzner Cloud]
-        subgraph HZ_Firewall [Firewall Zone]
+
+    subgraph Row2 [Core Infrastructure - Hetzner]
+      Hetzner[Hetzner Cloud]:::hetzner
+        subgraph HZ_Firewall [Firewall Zone]:::firewall
             direction TB
             Core_Traefik["Traefik (Ingress)"]:::core
-            subgraph Swarm [Docker Swarm Cluster]
+            subgraph Swarm [Docker Swarm Cluster]:::swarm
                 direction TB
                 Node1["Node 1"]:::swarm
                 Node2["Node 2"]:::swarm
@@ -59,7 +67,8 @@ flowchart TD
         end
     end
 
-    subgraph GCP [GCP Services]
+    subgraph Row3 [Backend Services - GCP]
+      GCP[GCP Services]:::gcp
         direction TB
         GCP_Firestore["Firestore (App Data / Status)"]:::gcp
         GCP_Scheduler["Cloud Scheduler (Triggers)"]:::gcp
@@ -68,11 +77,15 @@ flowchart TD
         GCP_PubSub["Pub/Sub (Events)"]:::gcp
     end
 
-    subgraph AI_Services [Managed AI Services]
+    subgraph Row4 [Managed AI Services]
+      AI_Services[AI Services]:::ai
         direction LR
         Qdrant["Qdrant Cloud (Vector DB)"]:::qdrant
         Groq["Groq Cloud (LLM Inference)"]:::groq
     end
+
+
+    %% --- Define Primary Flows / Connections ---
 
     CF_DNS --> Core_Traefik;
     Ext_Aircall -- "Webhook" --> CF_AircallWorker;
@@ -96,13 +109,4 @@ flowchart TD
     Core_Traefik -- "Routes Traffic To" --> Applications;
     Applications -- "Authenticate Via" --> App_Keycloak;
     Applications -- "Read/Write Data" --> GCP_Firestore;
-
-    class Hetzner hetzner;
-    class HZ_Firewall firewall;
-    class Swarm swarm;
-    class GCP gcp;
-    class AI_Services ai;
-    class External_APIs external;
-    class Edge_Layer,Cloudflare cloudflare;
-    class Vercel vercel;
 ```
