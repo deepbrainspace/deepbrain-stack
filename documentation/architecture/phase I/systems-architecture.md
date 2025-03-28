@@ -1,8 +1,5 @@
 ```mermaid
-graph TD
-    %% System Architecture (Revised - Attempt 3)
-
-    %% Define Styles
+flowchart TD
     classDef cloudflare fill:#F6821F,color:white;
     classDef hetzner fill:#D50C2D,color:white;
     classDef firewall fill:#D50C2D,color:white,stroke-width:4px,stroke-dasharray: 5 5;
@@ -15,8 +12,6 @@ graph TD
     classDef core fill:#ADD8E6,color:black;
     classDef apps fill:#E6E6FA,color:black;
     classDef ai fill:#9C27B0,color:white;
-
-    %% --- Structure Definition ---
 
     subgraph External_APIs [External APIs]
         direction LR
@@ -63,7 +58,6 @@ graph TD
             end
         end
     end
-    class HZ_Firewall firewall; % Apply firewall style to the zone subgraph
 
     subgraph GCP [GCP Services]
         direction TB
@@ -79,42 +73,36 @@ graph TD
         Qdrant["Qdrant Cloud (Vector DB)"]:::qdrant
         Groq["Groq Cloud (LLM Inference)"]:::groq
     end
-    class AI_Services ai; % Style the AI Services subgraph
 
-
-    %% --- Define Primary Flows / Connections ---
-
-    %% Ingress Flow
     CF_DNS --> Core_Traefik;
-
-    %% Webhook Data Ingestion Flow
     Ext_Aircall -- "Webhook" --> CF_AircallWorker;
     Ext_Guesty -- "Webhook" --> CF_GuestyWorker;
     CF_AircallWorker -- "Store Transformed Data" --> GCP_Firestore;
     CF_GuestyWorker -- "Store Transformed Data" --> GCP_Firestore;
     GCP_Firestore -- "Trigger (on write)" --> GCP_VectorizeFunc;
-    App_MongoDB -- "Change Stream --> PubSub" --> GCP_PubSub; % Simplified label
+    App_MongoDB -- "Change Stream --> PubSub" --> GCP_PubSub;
     GCP_PubSub -- "Trigger" --> GCP_VectorizeFunc;
     GCP_VectorizeFunc -- "Vectorize & Upsert" --> Qdrant;
-
-    %% LLM Query Flow
-    App_RocketChat -- "User Query --> Webhook" --> CF_LLMWorker; % Simplified label
+    App_RocketChat -- "User Query --> Webhook" --> CF_LLMWorker;
     CF_LLMWorker -- "1. Retrieve Context" --> Qdrant;
     CF_LLMWorker -- "2. Generate Response" --> Groq;
     CF_LLMWorker -- "3. Send Response" --> App_RocketChat;
     CF_LLMWorker -- "4. Store Q&A (Optional)" --> GCP_Firestore;
-
-    %% Backup Flow
     GCP_Scheduler -- "Trigger" --> GCP_BackupFunc;
-    GCP_BackupFunc -- "Orchestrates Hetzner Backup" --> Hetzner; % Simplified interaction point label
-    Hetzner -- "Stores Backup --> R2" --> CF_R2; % Simplified interaction point label
+    GCP_BackupFunc -- "Orchestrates Hetzner Backup" --> Hetzner;
+    Hetzner -- "Stores Backup --> R2" --> CF_R2;
     GCP_BackupFunc -- "Logs Status" --> GCP_Firestore;
-
-    %% Secrets Management Flow
-    Vercel_SecretsUI -- "Manages Secrets --> KV" --> CF_KV; % Simplified label
-
-    %% General Service Connections
+    Vercel_SecretsUI -- "Manages Secrets --> KV" --> CF_KV;
     Core_Traefik -- "Routes Traffic To" --> Applications;
     Applications -- "Authenticate Via" --> App_Keycloak;
     Applications -- "Read/Write Data" --> GCP_Firestore;
+
+    class Hetzner hetzner;
+    class HZ_Firewall firewall;
+    class Swarm swarm;
+    class GCP gcp;
+    class AI_Services ai;
+    class External_APIs external;
+    class Edge_Layer,Cloudflare cloudflare;
+    class Vercel vercel;
 ```
