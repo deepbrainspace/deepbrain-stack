@@ -11,8 +11,9 @@ graph TD
     A[Mobile Device<br>Immich App] -->|Uploads via HTTPS| B[CAX41<br>Traefik]
     C[Web Browser<br>Immich Web] -->|Accesses via HTTPS| B
     B -->|Routes to| D[Immich Server<br>Docker Compose]
-    D -->|Stores/Retrieves| E[Hetzner Storage Box<br>Mounted via SSHFS]
+    D -->|Stores Photos| E[Hetzner Storage Box<br>Mounted via SSHFS]
     D -->|ML API Calls| F[RunPod Serverless<br>GPU Inference]
+    B -->|Restic Backups| E
     E -->|Syncs via WebDAV| G[Synology NAS<br>Local Backup]
     
     subgraph Hetzner CAX41
@@ -25,7 +26,7 @@ graph TD
     end
     
     subgraph Storage
-        E[Hetzner Storage Box]
+        E[Hetzner Storage Box<br>/immich, /restic]
     end
     
     subgraph Local Backup
