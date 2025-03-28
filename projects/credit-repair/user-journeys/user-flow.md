@@ -1,3 +1,4 @@
+```mermaid
 stateDiagram-v2
     [*] --> LandingPage : User Arrives
     
@@ -48,3 +49,4 @@ stateDiagram-v2
     LegalConnection --> CreditBuilding : Potential Legal Resolution
     
     CreditBuilding --> [*] : Ongoing Credit Improvement
+  ```
