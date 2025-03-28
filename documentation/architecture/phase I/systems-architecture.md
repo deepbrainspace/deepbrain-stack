@@ -95,9 +95,9 @@ flowchart TD
 
     %% Backup Flow
     GCP_Scheduler -- "Trigger" --> GCP_BackupFunc;
-    GCP_BackupFunc -- "Orchestrate" --> Hetzner_Infra; %% Points to the Hetzner subgraph
+    GCP_BackupFunc -- "Orchestrate" --> Hetzner_Infra;
     GCP_BackupFunc -- "Log Status" --> GCP_Firestore;
-    Hetzner_Infra -- "Store Backup --> R2" --> CF_R2; %% Represents the outcome
+    Hetzner_Infra -- "Store Backup --> R2" --> CF_R2;
 
     %% LLM Query Flow
     App_RocketChat -- "User Query --> Webhook" --> CF_LLMWorker;
