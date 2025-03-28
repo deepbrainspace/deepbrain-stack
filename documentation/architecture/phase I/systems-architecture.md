@@ -3,18 +3,18 @@ flowchart TD
     %% System Architecture - Flowchart Style (Revised Layout & Styles)
 
     %% --- Define Styles (Lighter Backgrounds) ---
-    classDef cloudflare fill:#F38020,color:white,stroke:#F38020;        %% Cloudflare Orange (Text White)
-    classDef hetzner fill:#E8E8E8,color:black,stroke:#D50C2D;            %% Light Grey (Text Black), Hetzner Red Border
-    classDef firewall fill:#FAE0E3,color:black,stroke:#D50C2D,stroke-dasharray: 5 5; %% Light Red (Text Black), Hetzner Red Dashed Border
-    classDef gcp fill:#E3F2FD,color:black,stroke:#4285F4;                %% Light Blue (Text Black), GCP Blue Border
-    classDef vercel fill:#F0F0F0,color:black,stroke:#000000;              %% Very Light Grey (Text Black), Black Border
-    classDef external fill:#DCDCDC,color:black,stroke:#666666;            %% Lighter Grey (Text Black), Grey Border
-    classDef qdrant fill:#E0FFFF,color:black,stroke:#00C4CC;             %% Light Cyan (Text Black), Qdrant Cyan Border
-    classDef groq fill:#FFE0F0,color:black,stroke:#FF4081;               %% Light Pink (Text Black), Groq Pink Border
-    classDef swarm fill:#D6ECF8,color:black,stroke:#2496ED;              %% Lighter Blue (Text Black), Docker Blue Border
-    classDef core fill:#F0F8FF,color:black,stroke:#2496ED;               %% Alice Blue (Text Black), Docker Blue Border
-    classDef apps fill:#F8F8FF,color:black,stroke:#2496ED;               %% Ghost White (Text Black), Docker Blue Border
-    classDef ai fill:#F3E5F5,color:black,stroke:#9C27B0;                 %% Light Purple (Text Black), Purple Border
+    classDef cloudflare fill:#F38020,color:white,stroke:#F38020;        
+    classDef hetzner fill:#E8E8E8,color:black,stroke:#D50C2D;            
+    classDef firewall fill:#FAE0E3,color:black,stroke:#D50C2D,stroke-dasharray: 5 5; 
+    classDef gcp fill:#E3F2FD,color:black,stroke:#4285F4;                
+    classDef vercel fill:#F0F0F0,color:black,stroke:#000000;             
+    classDef external fill:#DCDCDC,color:black,stroke:#666666;           
+    classDef qdrant fill:#E0FFFF,color:black,stroke:#00C4CC;            
+    classDef groq fill:#FFE0F0,color:black,stroke:#FF4081;              
+    classDef swarm fill:#D6ECF8,color:black,stroke:#2496ED;             
+    classDef core fill:#F0F8FF,color:black,stroke:#2496ED;              
+    classDef apps fill:#F8F8FF,color:black,stroke:#2496ED;               
+    classDef ai fill:#F3E5F5,color:black,stroke:#9C27B0;                 
 
 
     %% --- Structure Definition (Top-Down Arrangement) ---
