@@ -47,4 +47,8 @@ The following contains a lean stack that is ideal and important for self-hosting
 - ai editor: cursor
 - coding model: claude 3.7
 - bookmarking: hoarder
+- local AI:
+    - vectordb: objectbox.ai
+    - llm: phi3
+- remote desktop: rustdesk
 
