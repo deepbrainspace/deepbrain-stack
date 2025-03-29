@@ -26,37 +26,37 @@ Your idea is fantastic—a self-contained, voice-driven AI stack that leverages 
 
 ### Architecture Diagram (Mermaid)
 Here’s how it could look, using Mermaid’s flowchart syntax:
-
-```mermaid
 graph TD
     subgraph "User Interaction"
         A[You<br/><i>Voice Input</i>]:::user -->|Speaks| B[RocketChat<br/><i>Self-Hosted Chat</i>]:::service
     end
 
     subgraph "Agent Core (Serverless)"
-        B -->|Webhook/POST| C[AI Agent<br/><i>Cloudflare Workers</i>]:::serverless
-        C -->|Query Context| D[Qdrant<br/><i>VectorDB</i>]:::storage
-        C -->|Generate Files| E[Claude 3.7<br/><i>API</i>]:::service
-        C -->|Iterate if Needed| E
+        B -->|Webhook/POST| C[Worker<br/><i>Entry Point</i>]:::serverless
+        C -->|Spawn Task| D[Durable Object<br/><i>DeployTask:nextcloud</i>]:::durable
+        D -->|Query Context| E[Qdrant<br/><i>VectorDB</i>]:::storage
+        D -->|Generate Files| F[Claude 3.7<br/><i>API</i>]:::service
+        D -->|Iterate Internally| F
     end
 
     subgraph "Knowledge Input"
-        F[AppFlowy<br/><i>Knowledgebase</i>]:::service -->|Text Updates| G[Embedding Service<br/><i>Serverless</i>]:::serverless
-        G -->|Vectors| D
+        G[AppFlowy<br/><i>Knowledgebase</i>]:::service -->|Text Updates| H[Embedding Service<br/><i>Serverless</i>]:::serverless
+        H -->|Vectors| E
     end
 
     subgraph "Deployment & Review"
-        C -->|Run Playbooks| H[Target Servers<br/><i>Synology, Cloud, etc.</i>]:::servers
-        H -->|Status| C
-        C -->|Notify| B
-        C -->|Commit| I{GitHub Repo<br/><i>PR Creation</i>}:::action
-        I -->|Review| A
+        D -->|Run Playbooks| I[Target Servers<br/><i>Synology, Cloud, etc.</i>]:::servers
+        I -->|Status| D
+        D -->|Notify| B
+        D -->|Commit| J{GitHub Repo<br/><i>PR Creation</i>}:::action
+        J -->|Review| A
     end
 
     %% Styling
     classDef user fill:#f9f,stroke:#333,stroke-width:2px
     classDef service fill:#bbf,stroke:#666,stroke-width:2px
     classDef serverless fill:#dfd,stroke:#999,stroke-width:2px
+    classDef durable fill:#fdd,stroke:#f66,stroke-width:2px,shape:ellipse
     classDef storage fill:#bfb,stroke:#333,stroke-width:2px,shape:cylinder
     classDef servers fill:#ffb,stroke:#666,stroke-width:2px
     classDef action fill:#fbf,stroke:#f66,stroke-width:2px,shape:diamond
