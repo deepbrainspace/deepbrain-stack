@@ -161,13 +161,13 @@ Let’s calculate based on a small-scale test run (5 domains over 3 months):
 
 Run a pilot with 1-2 domains first. If it flips for $800-$1,000 each (netting $500+ profit/domain), you’ve got a winner. If not, losses are capped, and you’ve got data to rethink. The AI agent idea’s got legs—competition’s there, but no one’s fully cracked this yet!
 
+
 Below, I’ve split the domain flipping process into three distinct AI agents—**Buying Agent**, **Marketing Agent**, and **Selling Agent**—each with its own responsibilities. I’ve created separate Mermaid diagrams for each agent, wrapped in Markdown, and included documentation explaining their roles. This modular approach lets you develop, test, and scale them independently while keeping the overall workflow intact. You can add these to your documentation as separate sections.
 
----
 
 ### 1. Buying Agent
 #### Mermaid Diagram
-```markdown
+
 ```mermaid
 graph TD
     A[Start: Domain Search] --> B[Scan Expired Domains]
@@ -179,7 +179,7 @@ graph TD
     G --> H[Log to Firestore]
     H --> I[Pass to Marketing Agent]
 ```
-```
+
 
 #### Documentation: Buying Agent
 The **Buying Agent** automates the process of finding and acquiring domains, though for your initial phase with 20 existing domains, it’s optional and can be built later. Here’s how it works:
@@ -196,11 +196,8 @@ The **Buying Agent** automates the process of finding and acquiring domains, tho
 **Tech Stack:** Cloudflare Workers (logic), Namecheap API (purchasing), Firestore (storage), GitHub Actions (scheduling).  
 **Initial Use:** Skip this for now—use your 20 domains—then build it after validating the process.
 
----
-
 ### 2. Marketing Agent
 #### Mermaid Diagram
-```markdown
 ```mermaid
 graph TD
     J[Start: Domain Received] --> K[Generate Site]
@@ -219,7 +216,6 @@ graph TD
     W -->|Firestore| X[Monitor Traffic & Earnings]
     X -->|30-60 Days| Y[Pass to Selling Agent]
 ```
-```
 
 #### Documentation: Marketing Agent
 The **Marketing Agent** takes a domain, builds a site, optimizes it for SEO, and optionally monetizes it with affiliates while preparing it for sale. This is the core of your initial phase with existing domains.
@@ -237,8 +233,6 @@ The **Marketing Agent** takes a domain, builds a site, optimizes it for SEO, and
 **Tech Stack:** Cloudflare Workers (logic), GroqCloud (content), Gemini (images), Cloudflare Pages (hosting), Firestore (tracking), GitHub Actions (automation).  
 **Initial Use:** Start here with your 20 domains—build and test this first.
 
----
-
 ### 3. Selling Agent
 #### Mermaid Diagram
 ```markdown
@@ -254,7 +248,6 @@ graph TD
     GG --> HH[Log Results]
     HH -->|Firestore| II[Reinvest or Adjust]
     II --> JJ[Feedback to Buying Agent]
-```
 ```
 
 #### Documentation: Selling Agent
@@ -273,7 +266,6 @@ The **Selling Agent** evaluates the site’s performance, lists it for sale, and
 **Tech Stack:** Cloudflare Workers (logic), Flippa API (listing), Firestore (storage), GitHub Actions (automation).  
 **Initial Use:** Activate after the Marketing Agent succeeds—test with 1-2 sales first.
 
----
 
 ### How It All Ties Together
 - **Modularity:** Each agent runs independently but connects via Firestore (e.g., Buying Agent logs domains, Marketing Agent reads them, Selling Agent finalizes). GitHub Actions orchestrate the handoffs.
