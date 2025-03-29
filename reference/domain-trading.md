@@ -161,92 +161,129 @@ Let’s calculate based on a small-scale test run (5 domains over 3 months):
 
 Run a pilot with 1-2 domains first. If it flips for $800-$1,000 each (netting $500+ profit/domain), you’ve got a winner. If not, losses are capped, and you’ve got data to rethink. The AI agent idea’s got legs—competition’s there, but no one’s fully cracked this yet!
 
-Below is a Mermaid diagram visualizing the entire process of finding, buying, monetizing, listing, and flipping domain names using your proposed AI agent strategy. I’ve wrapped it in Markdown for easy inclusion in your documentation, followed by a brief explanation of each step. You can copy this directly into your docs and tweak as needed!
+Below, I’ve split the domain flipping process into three distinct AI agents—**Buying Agent**, **Marketing Agent**, and **Selling Agent**—each with its own responsibilities. I’ve created separate Mermaid diagrams for each agent, wrapped in Markdown, and included documentation explaining their roles. This modular approach lets you develop, test, and scale them independently while keeping the overall workflow intact. You can add these to your documentation as separate sections.
 
-### Mermaid Diagram in Markdown
+---
 
+### 1. Buying Agent
+#### Mermaid Diagram
+```markdown
 ```mermaid
 graph TD
-    A[Start: Existing Domains] --> B[Analyze Domains]
-    B -->|Filter by niche, DA, potential| C[Select Domain]
-    C --> D[Generate Site with AI Agent]
-    D -->|Cloudflare Workers + GroqCloud| E[Content Creation]
-    E -->|DeepSeek-Qwen-32B| F[5-10 Pages Generated]
-    D -->|Google Gemini Imagen| G[Image Generation]
-    G -->|3-5 Images per Site| H[Visuals Added]
-    F --> I[Deploy Site]
-    I -->|Cloudflare Pages + GitHub Actions| J[Live Site]
-    J --> K[SEO Optimization]
-    K -->|Google Search Console API| L[Submit to Index]
-    K -->|Basic Backlinks| M[Boost Rankings]
-    J --> N[Monetize with Affiliates]
-    N -->|ClickBank/JVZoo API| O[Embed Affiliate Links]
-    O --> P[Track Traffic & Earnings]
-    P -->|Firestore| Q[Monitor Performance]
-    Q -->|30-60 Days| R[Evaluate Metrics]
-    R -->|Traffic, Rankings, Revenue| S[List on Flippa]
-    S -->|Flippa API| T[Set Price or Auction]
-    T --> U[Sale Completed]
-    U --> V[Profit or Loss]
-    V --> W[Reinvest or Adjust]
-    W -->|Scale Up| X[Add Buying Agent]
-    X -->|Namecheap API| Y[Automate Domain Purchase]
-    Y --> Z[Repeat Process]
-    Z --> A
+    A[Start: Domain Search] --> B[Scan Expired Domains]
+    B -->|ExpiredDomains.net/Namecheap API| C[Analyze Metrics]
+    C -->|DA, Backlinks, Niche| D[Filter Domains]
+    D -->|Criteria: DA > 15, Cost < $200| E[Select Domain]
+    E --> F[Purchase Domain]
+    F -->|Namecheap API| G[Domain Acquired]
+    G --> H[Log to Firestore]
+    H --> I[Pass to Marketing Agent]
+```
 ```
 
-### Documentation: How the Domain Flipping Process Works
+#### Documentation: Buying Agent
+The **Buying Agent** automates the process of finding and acquiring domains, though for your initial phase with 20 existing domains, it’s optional and can be built later. Here’s how it works:
 
-This diagram outlines the full lifecycle of flipping your existing 20 domains using an AI agent, from analysis to sale, with optional monetization and future automation for buying new domains. Here’s how it works:
+- **Start: Domain Search (A):** Initiates a daily scan for new opportunities.
+- **Scan Expired Domains (B):** Uses ExpiredDomains.net (scraping) or Namecheap API to identify expiring or available domains.
+- **Analyze Metrics (C):** Pulls DA, backlinks, and niche relevance via Moz/Ahrefs APIs or manual data if APIs are unavailable.
+- **Filter Domains (D):** Applies rules (e.g., DA > 15, cost < $200, keywords like “AI” or “health”) to shortlist candidates.
+- **Select Domain (E):** Picks the top domain based on potential value.
+- **Purchase Domain (F-G):** Executes the buy via Namecheap API, securing the domain.
+- **Log to Firestore (H):** Records details (e.g., “AIHealthTools.com, $150, DA 15”) in Firestore.
+- **Pass to Marketing Agent (I):** Hands off to the next agent for site creation.
 
-1. **Start with Existing Domains (A)**  
-   - Begin with your 20 owned domains, avoiding upfront purchase costs.
+**Tech Stack:** Cloudflare Workers (logic), Namecheap API (purchasing), Firestore (storage), GitHub Actions (scheduling).  
+**Initial Use:** Skip this for now—use your 20 domains—then build it after validating the process.
 
-2. **Analyze Domains (B)**  
-   - Assess each domain’s niche, Domain Authority (DA), backlinks, and flipping potential using manual checks or tools like Moz/Ahrefs.
+---
 
-3. **Select Domain (C)**  
-   - Pick one domain to process (e.g., “AIHealthTools.com”) based on marketability.
+### 2. Marketing Agent
+#### Mermaid Diagram
+```markdown
+```mermaid
+graph TD
+    J[Start: Domain Received] --> K[Generate Site]
+    K -->|Cloudflare Workers| L[Content Creation]
+    L -->|GroqCloud DeepSeek-Qwen-32B| M[5-10 Pages]
+    K -->|Google Gemini Imagen| N[Image Generation]
+    N -->|3-5 Images| O[Visuals Added]
+    M --> P[Deploy Site]
+    P -->|Cloudflare Pages + GitHub Actions| Q[Live Site]
+    Q --> R[SEO Optimization]
+    R -->|Google Search Console API| S[Submit to Index]
+    R -->|Basic Backlinks| T[Boost Rankings]
+    Q --> U[Monetize with Affiliates]
+    U -->|ClickBank/JVZoo API| V[Embed Links]
+    V --> W[Track Performance]
+    W -->|Firestore| X[Monitor Traffic & Earnings]
+    X -->|30-60 Days| Y[Pass to Selling Agent]
+```
+```
 
-4. **Generate Site with AI Agent (D)**  
-   - The AI agent, running on Cloudflare Workers, kicks off site creation.
+#### Documentation: Marketing Agent
+The **Marketing Agent** takes a domain, builds a site, optimizes it for SEO, and optionally monetizes it with affiliates while preparing it for sale. This is the core of your initial phase with existing domains.
 
-5. **Content Creation (E-F)**  
-   - GroqCloud’s DeepSeek-Qwen-32B generates 5-10 pages (e.g., homepage, blog posts) targeting niche keywords like “AI healthcare solutions.”
+- **Start: Domain Received (J):** Accepts a domain (e.g., “AIHealthTools.com”) from your list or Buying Agent.
+- **Generate Site (K):** Cloudflare Workers orchestrate site creation.
+- **Content Creation (L-M):** GroqCloud’s DeepSeek-Qwen-32B generates 5-10 pages (e.g., homepage, blog posts) targeting keywords like “AI healthcare solutions.”
+- **Image Generation (N-O):** Google Gemini’s Imagen creates 3-5 free visuals (e.g., logos, headers).
+- **Deploy Site (P-Q):** GitHub Actions pushes the static site to Cloudflare Pages, making it live.
+- **SEO Optimization (R-T):** Submits to Google Search Console for indexing and adds basic backlinks (e.g., directories) to improve rankings.
+- **Monetize with Affiliates (U-V):** Embeds ClickBank/JVZoo links (e.g., AI tool offers) in content.
+- **Track Performance (W-X):** Logs traffic and earnings in Firestore over 30-60 days.
+- **Pass to Selling Agent (Y):** Hands off once metrics (traffic, rankings) are ready.
 
-6. **Image Generation (G-H)**  
-   - Google Gemini’s Imagen creates 3-5 free visuals (e.g., logos, headers) to enhance the site.
+**Tech Stack:** Cloudflare Workers (logic), GroqCloud (content), Gemini (images), Cloudflare Pages (hosting), Firestore (tracking), GitHub Actions (automation).  
+**Initial Use:** Start here with your 20 domains—build and test this first.
 
-7. **Deploy Site (I-J)**  
-   - GitHub Actions pushes the static site to Cloudflare Pages, making it live with zero manual effort.
+---
 
-8. **SEO Optimization (K-M)**  
-   - Submit the site to Google Search Console for indexing and add basic backlinks (e.g., directories) to boost rankings.
+### 3. Selling Agent
+#### Mermaid Diagram
+```markdown
+```mermaid
+graph TD
+    Z[Start: Site Ready] --> AA[Evaluate Metrics]
+    AA -->|Traffic, Rankings, Revenue| BB[Prepare Listing]
+    BB -->|Flippa API| CC[List on Flippa]
+    CC --> DD[Set Price or Auction]
+    DD --> EE[Sale Completed]
+    EE --> FF[Transfer Domain & Site]
+    FF --> GG[Profit or Loss]
+    GG --> HH[Log Results]
+    HH -->|Firestore| II[Reinvest or Adjust]
+    II --> JJ[Feedback to Buying Agent]
+```
+```
 
-9. **Monetize with Affiliates (N-Q)**  
-   - Embed ClickBank/JVZoo affiliate links (e.g., AI tool offers) in content. Track traffic and earnings in Firestore while the site ranks.
+#### Documentation: Selling Agent
+The **Selling Agent** evaluates the site’s performance, lists it for sale, and completes the flip, feeding results back into the system.
 
-10. **Evaluate Metrics (R)**  
-    - After 30-60 days, check traffic (e.g., 20-50 visits/month), rankings (e.g., page 2), and affiliate revenue.
+- **Start: Site Ready (Z):** Receives the site from the Marketing Agent after 30-60 days.
+- **Evaluate Metrics (AA):** Checks traffic (e.g., 20-50 visits/month), rankings (e.g., page 2), and affiliate revenue (e.g., $20-$100).
+- **Prepare Listing (BB):** Crafts a listing (e.g., “AIHealthTools.com—DA 15, 30 visits/month, $1B niche potential”).
+- **List on Flippa (CC-DD):** Uses Flippa API to list with a set price ($800-$1,200) or auction format.
+- **Sale Completed (EE-FF):** Finalizes the sale and transfers the domain/site to the buyer.
+- **Profit or Loss (GG):** Calculates net gain (e.g., $600-$1,000) or loss if unsold.
+- **Log Results (HH):** Stores outcome in Firestore for tracking.
+- **Reinvest or Adjust (II):** Uses profits to scale or tweaks agent logic.
+- **Feedback to Buying Agent (JJ):** Informs future purchases (e.g., “health niches sell well”).
 
-11. **List on Flippa (S-T)**  
-    - Use Flippa’s API to list the site with metrics (e.g., “DA 15, 30 visits/month”) for a set price ($800-$1,200) or auction.
+**Tech Stack:** Cloudflare Workers (logic), Flippa API (listing), Firestore (storage), GitHub Actions (automation).  
+**Initial Use:** Activate after the Marketing Agent succeeds—test with 1-2 sales first.
 
-12. **Sale Completed (U-V)**  
-    - Transfer the domain and site to the buyer, netting profit (e.g., $600-$1,000) or a loss if unsold.
+---
 
-13. **Reinvest or Adjust (W)**  
-    - Use profits to refine the agent or scale to more domains.
+### How It All Ties Together
+- **Modularity:** Each agent runs independently but connects via Firestore (e.g., Buying Agent logs domains, Marketing Agent reads them, Selling Agent finalizes). GitHub Actions orchestrate the handoffs.
+- **Initial Focus:** Start with the **Marketing Agent** for your 20 domains, then build the **Selling Agent** once sites are ready. Add the **Buying Agent** later to scale.
+- **Automation:** Cloudflare Workers and GitHub Actions ensure no manual steps—Firestore acts as the glue.
+- **Dashboard (Optional):** A Next.js app on Vercel can pull Firestore data to monitor all agents.
 
-14. **Add Buying Agent (X-Y)**  
-    - Later, integrate a Namecheap API module to automate domain purchases, targeting expired or undervalued domains.
+### Next Steps
+- **Code the Marketing Agent First:** Use your stack (Cloudflare Workers, GroqCloud, Gemini, Pages) to process 2-3 domains.
+- **Test Selling Agent:** List a finished site on Flippa manually (API later).
+- **Build Buying Agent Last:** Add it once you’ve flipped a few and want to scale.
 
-15. **Repeat Process (Z)**  
-    - Loop back to step 1, scaling with new domains or optimizing existing ones.
-
-### Notes
-- **Automation:** GitHub Actions and Cloudflare Workers eliminate manual steps, syncing everything via APIs.
-- **Monetization:** Affiliate links add interim revenue (e.g., $20-$100/site) without derailing the flip.
-- **Scalability:** Start with your 20 domains, then expand with the buying agent once profitable.
-
-This visual and process give you a clear A-Z roadmap. Add it to your docs, and let me know if you want tweaks!
+This breakdown keeps each agent focused and manageable—add it to your docs and let me know if you want code snippets or refinements!
