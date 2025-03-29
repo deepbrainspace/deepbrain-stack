@@ -166,7 +166,6 @@ Below, I’ve split the domain flipping process into three distinct AI agents—
 
 
 ### 1. Buying Agent
-#### Mermaid Diagram
 
 ```mermaid
 graph TD
@@ -180,8 +179,6 @@ graph TD
     H --> I[Pass to Marketing Agent]
 ```
 
-
-#### Documentation: Buying Agent
 The **Buying Agent** automates the process of finding and acquiring domains, though for your initial phase with 20 existing domains, it’s optional and can be built later. Here’s how it works:
 
 - **Start: Domain Search (A):** Initiates a daily scan for new opportunities.
@@ -197,7 +194,6 @@ The **Buying Agent** automates the process of finding and acquiring domains, tho
 **Initial Use:** Skip this for now—use your 20 domains—then build it after validating the process.
 
 ### 2. Marketing Agent
-#### Mermaid Diagram
 ```mermaid
 graph TD
     J[Start: Domain Received] --> K[Generate Site]
@@ -216,8 +212,6 @@ graph TD
     W -->|Firestore| X[Monitor Traffic & Earnings]
     X -->|30-60 Days| Y[Pass to Selling Agent]
 ```
-
-#### Documentation: Marketing Agent
 The **Marketing Agent** takes a domain, builds a site, optimizes it for SEO, and optionally monetizes it with affiliates while preparing it for sale. This is the core of your initial phase with existing domains.
 
 - **Start: Domain Received (J):** Accepts a domain (e.g., “AIHealthTools.com”) from your list or Buying Agent.
@@ -234,8 +228,6 @@ The **Marketing Agent** takes a domain, builds a site, optimizes it for SEO, and
 **Initial Use:** Start here with your 20 domains—build and test this first.
 
 ### 3. Selling Agent
-#### Mermaid Diagram
-```markdown
 ```mermaid
 graph TD
     Z[Start: Site Ready] --> AA[Evaluate Metrics]
@@ -250,7 +242,6 @@ graph TD
     II --> JJ[Feedback to Buying Agent]
 ```
 
-#### Documentation: Selling Agent
 The **Selling Agent** evaluates the site’s performance, lists it for sale, and completes the flip, feeding results back into the system.
 
 - **Start: Site Ready (Z):** Receives the site from the Marketing Agent after 30-60 days.
