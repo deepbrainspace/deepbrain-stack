@@ -41,7 +41,7 @@ graph TD
     end
 
     subgraph "Knowledge Input"
-        F[AppFlowy<br/><i>Knowledgebase</i>]:::service -->|Text Updates| G[Embedding Service<br/><i>Serverless</i>]:::server saadaless
+        F[AppFlowy<br/><i>Knowledgebase</i>]:::service -->|Text Updates| G[Embedding Service<br/><i>Serverless</i>]:::serverless
         G -->|Vectors| D
     end
 
@@ -54,11 +54,11 @@ graph TD
     end
 
     %% Styling
-    classDef user fill:#f9f,stroke:#333,stroke-width:2px,shape:rect
-    classDef service fill:#bbf,stroke:#666,stroke-width:2px,shape:rect
-    classDef serverless fill:#dfd,stroke:#999,stroke-width:2px,shape:rect
+    classDef user fill:#f9f,stroke:#333,stroke-width:2px
+    classDef service fill:#bbf,stroke:#666,stroke-width:2px
+    classDef serverless fill:#dfd,stroke:#999,stroke-width:2px
     classDef storage fill:#bfb,stroke:#333,stroke-width:2px,shape:cylinder
-    classDef servers fill:#ffb,stroke:#666,stroke-width:2px,shape:rect
+    classDef servers fill:#ffb,stroke:#666,stroke-width:2px
     classDef action fill:#fbf,stroke:#f66,stroke-width:2px,shape:diamond
 ```
 
