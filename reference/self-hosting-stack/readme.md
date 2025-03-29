@@ -44,4 +44,7 @@ The following contains a lean stack that is ideal and important for self-hosting
 - streaming: bunny.net
 - payments: stripe
 - inference: groqCloud
+- ai editor: cursor
+- coding model: claude 3.7
+- bookmarking: hoarder
 
