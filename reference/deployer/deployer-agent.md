@@ -29,22 +29,37 @@ Here’s how it could look, using Mermaid’s flowchart syntax:
 
 ```mermaid
 graph TD
-    A[You] -->|Voice Input| B(RocketChat)
-    B -->|Text Command| C(AI Agent)
-    C -->|Query Domain Knowledge| D[Qdrant VectorDB]
-    D -->|Context Retrieved| C
-    E[AppFlowy Knowledgebase] -->|Manual Updates| F[Text Embedding Service]
-    F -->|Vectorized Data| D
-    C -->|API Call with Context| G[Claude 3.7 API]
-    G -->|Generated Files| C
-    C -->|Iterate if Needed| G
-    C -->|Deploy Playbooks| H[Target Servers: Synology, Cloud Box, etc.]
-    H -->|Status Feedback| C
-    C -->|Chat Notification| B
-    B -->|Review Prompt| A
-    C -->|Commit Changes| I[GitHub Repo]
-    I -->|Raise PR| J[PR Review]
-    A -->|Approve PR| J
+    subgraph "User Interaction"
+        A[You<br/><i>Voice Input</i>]:::user -->|Speaks| B[RocketChat<br/><i>Self-Hosted Chat</i>]:::service
+    end
+
+    subgraph "Agent Core (Serverless)"
+        B -->|Webhook/POST| C[AI Agent<br/><i>Cloudflare Workers</i>]:::serverless
+        C -->|Query Context| D[Qdrant<br/><i>VectorDB</i>]:::storage
+        C -->|Generate Files| E[Claude 3.7<br/><i>API</i>]:::service
+        C -->|Iterate if Needed| E
+    end
+
+    subgraph "Knowledge Input"
+        F[AppFlowy<br/><i>Knowledgebase</i>]:::service -->|Text Updates| G[Embedding Service<br/><i>Serverless</i>]:::server saadaless
+        G -->|Vectors| D
+    end
+
+    subgraph "Deployment & Review"
+        C -->|Run Playbooks| H[Target Servers<br/><i>Synology, Cloud, etc.</i>]:::servers
+        H -->|Status| C
+        C -->|Notify| B
+        C -->|Commit| I{GitHub Repo<br/><i>PR Creation</i>}:::action
+        I -->|Review| A
+    end
+
+    %% Styling
+    classDef user fill:#f9f,stroke:#333,stroke-width:2px,shape:rect
+    classDef service fill:#bbf,stroke:#666,stroke-width:2px,shape:rect
+    classDef serverless fill:#dfd,stroke:#999,stroke-width:2px,shape:rect
+    classDef storage fill:#bfb,stroke:#333,stroke-width:2px,shape:cylinder
+    classDef servers fill:#ffb,stroke:#666,stroke-width:2px,shape:rect
+    classDef action fill:#fbf,stroke:#f66,stroke-width:2px,shape:diamond
 ```
 
 #### Components Explained
