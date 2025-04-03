@@ -15,7 +15,7 @@ The following contains a lean stack that is ideal and important for self-hosting
 - hosting: hetzner
 - gpu hosting: runpod
 - serverless:
-    - cloudflare workers
+    - cloudflare workers, workers AI, durable objects
     - vercel serverless
     - bunny.net edge scripts, magic containers
     - gcp cloud functions, cloud run
@@ -51,4 +51,11 @@ The following contains a lean stack that is ideal and important for self-hosting
     - vectordb: objectbox.ai
     - llm: phi3
 - remote desktop: rustdesk
+- ai workflow: huginn
+- signature: documenso, opensign, docuseal, signserver
+- calendar: cal.com
+- databases: sqlite, rqlite, libsql, turso, d1
+
+
+
 
