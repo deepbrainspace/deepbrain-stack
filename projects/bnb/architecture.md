@@ -46,7 +46,7 @@ graph TD
     C[Aircall] -->|Webhooks| B
     B -->|Real-time Updates| D[Qdrant<br>Vector DB]
     B -->|Real-time Updates| E[Neo4j<br>Graph DB]
-    D -->|Text Search| F[RAG]
+    D -->|Text Search| F[AI Agent]
     E -->|Relational Data| F
     F -->|Raw Data| G[GroqCloud<br>DeepSeek-Qwen32B or GPT-4o Mini]
     G -->|Natural Response| F
