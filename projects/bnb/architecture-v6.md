@@ -1,7 +1,4 @@
-### README
-Below is a concise README for your BnB Internal Communications System, reflecting the final stack and setup:
 
-```markdown
 # BnB Internal Communications System
 
 A real-time, AI-powered platform for managing guest and team interactions at a BnB, built with Rocket.Chat, SurrealDB (TiKV backend), and GroqCloud.
@@ -69,9 +66,9 @@ This system integrates guest data from Guesty (bookings) and Aircall (calls) int
 - Deploy SurrealDB with TiKV single-node.
 - Prototype AI Agent with sample Guesty/Aircall data.
 - Test queries in Rocket.Chat (e.g., “Jane’s habits”).
-```
 
-### Updated Architecture Diagram (Mermaid)
+
+### Updated Architecture Diagram
 Here’s the revised diagram with SurrealDB (TiKV backend) and AI Agent:
 
 ```mermaid
