@@ -81,7 +81,7 @@ graph TD
     D -->|Raw Data| E
     E -->|Natural Response| D
     D -->|Posts Results| F[Rocket.Chat]
-    F -->|Staff Questions<br>e.g. "What was Jane's last request?"| D
+    F -->|Staff Questions<br>e.g. What was Jane's last request?| D
     subgraph Data Sources
         A
         C
