@@ -37,8 +37,8 @@ Your system aims to streamline BnB operations by integrating guest data from Gue
 
 This setup is optimal because it’s self-hosted (except GroqCloud, which you’d pay per API call), leverages Firestore’s simplicity, Qdrant’s search, Neo4j’s relationships, and an LLM’s polish—all feeding into Rocket.Chat for a unified UX.
 
-### Architecture Diagram (Mermaid)
-Here’s a visual using Mermaid syntax, showing how data flows and components connect:
+### Architecture Diagram
+Here’s an architecture diagram, showing how data flows and components connect:
 
 ```mermaid
 graph TD
@@ -48,7 +48,7 @@ graph TD
     B -->|Real-time Updates| E[Neo4j<br>Graph DB]
     D -->|Text Search| F[AI Agent]
     E -->|Relational Data| F
-    F -->|Raw Data| G[GroqCloud<br>DeepSeek-Qwen32B or GPT-4o Mini]
+    F -->|Raw Data| G[GroqCloud LLM<br>DeepSeek-Qwen32B or<br>GPT-4o Mini]
     G -->|Natural Response| F
     F -->|Posts Results| H[Rocket.Chat]
     H -->|Staff Queries<br>e.g., /guest-info| F
@@ -73,7 +73,7 @@ graph TD
 #### Diagram Notes
 - **Data Sources**: Guesty and Aircall feed raw data.
 - **Backend**: Firestore stages it, Qdrant vectorizes text, Neo4j builds the graph.
-- **Processing**: The bot orchestrates retrieval (Qdrant + Neo4j) and generation (GroqCloud LLM).
+- **Processing**: The AI Agent orchestrates retrieval (Qdrant + Neo4j) and generation (GroqCloud LLM).
 - **Interface**: Rocket.Chat displays results and takes staff inputs.
 
 ### Why It’s Efficient
@@ -84,5 +84,3 @@ graph TD
 - **Rocket.Chat**: Ties it all into one self-hosted UI, avoiding cloud vendor lock-in.
 
 This stack avoids redundancy (e.g., Firestore + Neo4j complement, don’t overlap much), scales with your BnB’s needs, and delivers a full guest view in chat. You’ve got a green field—starting here sets you up for efficiency without rework later.
-
-What do you think—any tweaks you’d want to explore before diving in? I can refine the flow or detail a piece (e.g., bot logic) if you’d like!
