@@ -56,7 +56,7 @@ flowchart TD
 graph TD
     A[Guesty] -->|Webhooks| B[SurrealDB<br>TiKV Backend<br>Graph + Document + Vector]
     C[Aircall] -->|Webhooks| B
-    B -->|SurrealQL Queries<br>Graph + Vector| D[AI Agent]
+    B -->|SurrealQL Queries<br>Graph + Vector| D[AI Agent (OLGA)]
     D -->|English Question| E[GroqCloud<br>DeepSeek-Qwen32B or GPT-4o Mini]
     E -->|Generated SurrealQL| D
     D -->|Raw Data| E
