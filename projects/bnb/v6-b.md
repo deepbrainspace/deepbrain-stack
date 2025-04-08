@@ -87,7 +87,7 @@ graph TD
     G[Systeme.io] -->|CRM/Email Data| B[(SurrealDB<br>TiKV Backend<br>Graph + Document + Vector)]
     A[Matomo] -->|Analytics Data| B
     C[YOURLS] -->|Link Tracking| B
-    D -->|Scheduled Posts| E{{EMMA Efficient Multichannel Marketing Agent}}
+    D -->|Scheduled Posts| E{{Agent Emma<br> Efficient Multichannel Marketing Agent}}
     B -->|SurrealQL Queries<br>Graph + Vector| E
     E -->|Posts Content| D[Postiz]
     L[Heliocone] -->|Enhances| E
