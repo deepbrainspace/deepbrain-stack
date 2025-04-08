@@ -38,8 +38,8 @@ This project automates operations, marketing, and financial management for a BnB
 ```mermaid
 flowchart TD
     U[Cloudflare DNS Proxy] -->|SSL| E[Traefik Reverse Proxy]
-    subgraph Hetzner_CCX23_Cluster_Docker_Swarm[Hetzner CCX23 Cluster (Docker Swarm)]
-        E --> Q{{AI Agents (OLGA, EMMA, RAIFA)}}
+    subgraph Hetzner_CCX23_Cluster_Docker_Swarm[Hetzner CCX23 Cluster]
+        E --> Q{{AI Agents - OLGA, EMMA, RAIFA}}
     end
     Q -->|Prompts| T(GroqCloud DeepSeek-32B)
     Q -->|API| V(Systeme.io CRM/Email)
