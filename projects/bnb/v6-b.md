@@ -9,9 +9,9 @@ This project automates operations, marketing, and financial management for a BnB
 
 ## Components
 - **AI Agents (Rust)**:
-  - **OLGA**: Real-time staff ops via Rocket.Chat (e.g., “Jane’s last request”).
+  - **OLGA**: Real-time staff ops via Rocket.Chat (e.g., "Jane’s last request").
   - **EMMA**: Marketing automation/content generation (e.g., promos via Postiz).
-  - **RAIFA**: Financial insights, reports, board calls (e.g., “Q2 profits”).
+  - **RAIFA**: Financial insights, reports, board calls (e.g., "Q2 profits").
   - Shared `bnb-core` crate for SurrealDB/GroqCloud logic.
 - **Core Services** (on Hetzner):
   - **Rocket.Chat**: Staff/stakeholder communication hub.
@@ -38,45 +38,45 @@ This project automates operations, marketing, and financial management for a BnB
 graph TD
     subgraph Hetzner_CCX23_Cluster
         subgraph Phase_I_Ops
-            A[Rocket.Chat<br>@Olga] -->|WebSocket| B[OLGA<br>Ops Lightweight GenAI Agent]
-            B -->|Queries| C[SurrealDB<br>TiKV]
-            E[Traefik<br>Reverse Proxy] -->|443| A
-            F[Heliocone] -->|Enhances| B
+            A[Rocket.Chat @Olga] --> B[OLGA Ops Lightweight GenAI Agent]
+            B --> C[SurrealDB TiKV]
+            E[Traefik Reverse Proxy] --> A
+            F[Heliocone] --> B
         end
 
         subgraph Phase_II_Marketing
-            G[Matomo<br>Analytics] -->|Data| H[EMMA<br>Efficient Multichannel Marketing Agent]
-            I[YOURLS<br>URL Tracking] -->|Data| H
-            J[Postiz<br>Scheduling] -->|Content| H
-            H -->|Queries| C
-            E -->|443| G
-            E -->|443| I
-            E -->|443| J
+            G[Matomo Analytics] --> H[EMMA Efficient Multichannel Marketing Agent]
+            I[YOURLS URL Tracking] --> H
+            J[Postiz Scheduling] --> H
+            H --> C
+            E --> G
+            E --> I
+            E --> J
         end
 
         subgraph Phase_III_Financial
-            L[RAIFA<br>Responsive AI Financial Agent] -->|Queries| C
-            L -->|Board Calls| A
-            M[Banking API] -->|Data| L
-            N[Guesty API] -->|Data| L
-            O[Stripe API] -->|Data| L
-            P[Tracking<br>Matomo] -->|Data| L
+            L[RAIFA Responsive AI Financial Agent] --> C
+            L --> A
+            M[Banking API] --> L
+            N[Guesty API] --> L
+            O[Stripe API] --> L
+            P[Tracking Matomo] --> L
         end
 
-        Q[Docker Swarm<br>Nodes] -->|Hosts| E
-        Q -->|Hosts| C
-        Q -->|Hosts| B
-        Q -->|Hosts| H
-        Q -->|Hosts| L
-        R[Restic<br>Backups] -->|IDrive e2| Q
-        S[Netdata<br>Monitoring] -->|Metrics| Q
+        Q[Docker Swarm Nodes] --> E
+        Q --> C
+        Q --> B
+        Q --> H
+        Q --> L
+        R[Restic Backups] --> Q
+        S[Netdata Monitoring] --> Q
     end
 
-    T[GroqCloud<br>DeepSeek-32B] <--|Prompts| B
-    T <--|Prompts| H
-    T <--|Prompts| L
-    U[Cloudflare<br>DNS Proxy] -->|DDoS, SSL| E
-    V[Systeme.io<br>CRM/Email] -->|API| H
+    T[GroqCloud DeepSeek-32B] --> B
+    T --> H
+    T --> L
+    U[Cloudflare DNS Proxy] --> E
+    V[Systeme.io CRM/Email] --> H
 ```
 
 - **Hetzner CCX23 Cluster**: Hosts all phases—OLGA, EMMA, RAIFA, and services.
@@ -86,19 +86,19 @@ graph TD
 ```mermaid
 graph TD
     subgraph Hetzner_CCX23_Cluster
-        A[Rocket.Chat<br>@Olga] -->|WebSocket| B[OLGA<br>Ops Lightweight GenAI Agent]
-        B -->|Queries| C[SurrealDB<br>TiKV]
-        E[Traefik<br>Reverse Proxy] -->|443| A
-        F[Heliocone] -->|Enhances| B
-        Q[Docker Swarm<br>Nodes] -->|Hosts| E
-        Q -->|Hosts| C
-        Q -->|Hosts| B
-        R[Restic<br>Backups] -->|IDrive e2| Q
-        S[Netdata<br>Monitoring] -->|Metrics| Q
+        A[Rocket.Chat @Olga] --> B[OLGA Ops Lightweight GenAI Agent]
+        B --> C[SurrealDB TiKV]
+        E[Traefik Reverse Proxy] --> A
+        F[Heliocone] --> B
+        Q[Docker Swarm Nodes] --> E
+        Q --> C
+        Q --> B
+        R[Restic Backups] --> Q
+        S[Netdata Monitoring] --> Q
     end
 
-    T[GroqCloud<br>DeepSeek-32B] <--|Prompts| B
-    U[Cloudflare<br>DNS Proxy] -->|DDoS, SSL| E
+    T[GroqCloud DeepSeek-32B] --> B
+    U[Cloudflare DNS Proxy] --> E
 ```
 
 - **Focus**: OLGA automates ops via Rocket.Chat, SurrealDB—all on Hetzner.
@@ -107,30 +107,30 @@ graph TD
 ```mermaid
 graph TD
     subgraph Hetzner_CCX23_Cluster
-        A[Rocket.Chat<br>@Olga] -->|WebSocket| B[OLGA<br>Ops Lightweight GenAI Agent]
-        B -->|Queries| C[SurrealDB<br>TiKV]
-        G[Matomo<br>Analytics] -->|Data| H[EMMA<br>Efficient Multichannel Marketing Agent]
-        I[YOURLS<br>URL Tracking] -->|Data| H
-        J[Postiz<br>Scheduling] -->|Content| H
-        H -->|Queries| C
-        E[Traefik<br>Reverse Proxy] -->|443| A
-        E -->|443| G
-        E -->|443| I
-        E -->|443| J
-        F[Heliocone] -->|Enhances| B
-        F -->|Enhances| H
-        Q[Docker Swarm<br>Nodes] -->|Hosts| E
-        Q -->|Hosts| C
-        Q -->|Hosts| B
-        Q -->|Hosts| H
-        R[Restic<br>Backups] -->|IDrive e2| Q
-        S[Netdata<br>Monitoring] -->|Metrics| Q
+        A[Rocket.Chat @Olga] --> B[OLGA Ops Lightweight GenAI Agent]
+        B --> C[SurrealDB TiKV]
+        G[Matomo Analytics] --> H[EMMA Efficient Multichannel Marketing Agent]
+        I[YOURLS URL Tracking] --> H
+        J[Postiz Scheduling] --> H
+        H --> C
+        E[Traefik Reverse Proxy] --> A
+        E --> G
+        E --> I
+        E --> J
+        F[Heliocone] --> B
+        F --> H
+        Q[Docker Swarm Nodes] --> E
+        Q --> C
+        Q --> B
+        Q --> H
+        R[Restic Backups] --> Q
+        S[Netdata Monitoring] --> Q
     end
 
-    T[GroqCloud<br>DeepSeek-32B] <--|Prompts| B
-    T <--|Prompts| H
-    U[Cloudflare<br>DNS Proxy] -->|DDoS, SSL| E
-    V[Systeme.io<br>CRM/Email] -->|API| H
+    T[GroqCloud DeepSeek-32B] --> B
+    T --> H
+    U[Cloudflare DNS Proxy] --> E
+    V[Systeme.io CRM/Email] --> H
 ```
 
 - **Focus**: Adds EMMA, marketing tools (Matomo, YOURLS, Postiz)—still on Hetzner.
@@ -139,39 +139,39 @@ graph TD
 ```mermaid
 graph TD
     subgraph Hetzner_CCX23_Cluster
-        A[Rocket.Chat<br>@Olga] -->|WebSocket| B[OLGA<br>Ops Lightweight GenAI Agent]
-        B -->|Queries| C[SurrealDB<br>TiKV]
-        G[Matomo<br>Analytics] -->|Data| H[EMMA<br>Efficient Multichannel Marketing Agent]
-        I[YOURLS<br>URL Tracking] -->|Data| H
-        J[Postiz<br>Scheduling] -->|Content| H
-        H -->|Queries| C
-        L[RAIFA<br>Responsive AI Financial Agent] -->|Queries| C
-        L -->|Board Calls| A
-        M[Banking API] -->|Data| L
-        N[Guesty API] -->|Data| L
-        O[Stripe API] -->|Data| L
-        P[Tracking<br>Matomo] -->|Data| L
-        E[Traefik<br>Reverse Proxy] -->|443| A
-        E -->|443| G
-        E -->|443| I
-        E -->|443| J
-        F[Heliocone] -->|Enhances| B
-        F -->|Enhances| H
-        F -->|Enhances| L
-        Q[Docker Swarm<br>Nodes] -->|Hosts| E
-        Q -->|Hosts| C
-        Q -->|Hosts| B
-        Q -->|Hosts| H
-        Q -->|Hosts| L
-        R[Restic<br>Backups] -->|IDrive e2| Q
-        S[Netdata<br>Monitoring] -->|Metrics| Q
+        A[Rocket.Chat @Olga] --> B[OLGA Ops Lightweight GenAI Agent]
+        B --> C[SurrealDB TiKV]
+        G[Matomo Analytics] --> H[EMMA Efficient Multichannel Marketing Agent]
+        I[YOURLS URL Tracking] --> H
+        J[Postiz Scheduling] --> H
+        H --> C
+        L[RAIFA Responsive AI Financial Agent] --> C
+        L --> A
+        M[Banking API] --> L
+        N[Guesty API] --> L
+        O[Stripe API] --> L
+        P[Tracking Matomo] --> L
+        E[Traefik Reverse Proxy] --> A
+        E --> G
+        E --> I
+        E --> J
+        F[Heliocone] --> B
+        F --> H
+        F --> L
+        Q[Docker Swarm Nodes] --> E
+        Q --> C
+        Q --> B
+        Q --> H
+        Q --> L
+        R[Restic Backups] --> Q
+        S[Netdata Monitoring] --> Q
     end
 
-    T[GroqCloud<br>DeepSeek-32B] <--|Prompts| B
-    T <--|Prompts| H
-    T <--|Prompts| L
-    U[Cloudflare<br>DNS Proxy] -->|DDoS, SSL| E
-    V[Systeme.io<br>CRM/Email] -->|API| H
+    T[GroqCloud DeepSeek-32B] --> B
+    T --> H
+    T --> L
+    U[Cloudflare DNS Proxy] --> E
+    V[Systeme.io CRM/Email] --> H
 ```
 
 - **Focus**: Adds RAIFA, financial APIs—fully integrated on Hetzner.
