@@ -102,10 +102,7 @@ graph TD
         J[Traefik] -->|SSL| D[Postiz]
         D -->|Scheduled Posts| E{{EMMA Efficient Multichannel Marketing Agent}}
         B -->|SurrealQL Queries<br>Graph + Vector| E
-        F -->|Generated SurrealQL| E
-        E -->|Raw Data| F
         H[Restic]
-        F -->|Content Ideas| E
         E -->|Posts Content| D
         K[Netdata] -->|Monitoring| E
         L[Heliocone] -->|Enhances| E
@@ -127,6 +124,10 @@ graph TD
             J
         end
     end
+    F -->|Generated SurrealQL| E
+    E -->|Raw Data| F
+    F -->|Content Ideas| E
+        
     E -->|English Question| F[GroqCloud<br>DeepSeek-32B]
     H -->|Backup| I[(IDrive e2)]
            
