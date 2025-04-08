@@ -1,7 +1,7 @@
 # BnB Automation System README
 
 ## Overview
-This project automates operations, marketing, and financial management for a BnB business, scaling from 0-20 to 100+ properties. Built on a **Hetzner CCX23 cluster** with **Docker Swarm**, it hosts **Rust-based AI agents**, **SurrealDB (TiKV)**, and supporting services, leveraging **GroqCloud DeepSeek-R1-Distill-Qwen-32B** for AI reasoning. **Cloudflare DNS Proxy** provides external security/routing. The system evolves in three phases:
+This project automates operations, marketing, and financial management for a BnB business, scaling from 0-20 to 100+ properties. Built on a **Hetzner CCX23 cluster** with **Docker Swarm**, it hosts **Rust-based AI agents**, **SurrealDB (TiKV)**, and supporting services, leveraging **GroqCloud DeepSeek-R1-Distill-Qwen-32B** for AI reasoning. **Cloudflare DNS Proxy** provides external security/routing, and **IDrive e2** handles backups. The system evolves in three phases:
 
 - **Phase I**: Operations with **OLGA** (Ops Lightweight GenAI Agent).
 - **Phase II**: Marketing with **EMMA** (Efficient Multichannel Marketing Agent).
@@ -30,121 +30,136 @@ This project automates operations, marketing, and financial management for a BnB
 - **External**:
   - **GroqCloud**: DeepSeek-32B LLM (~1-1.5s responses).
   - **Cloudflare DNS Proxy**: DDoS protection, SSL.
+  - **IDrive e2**: Cloud backup storage.
 
 ## Architecture Diagrams
 
 ### Overall Architecture
 ```mermaid
 flowchart TD
-    U[Cloudflare DNS Proxy] --> E[Traefik Reverse Proxy]
+    U[Cloudflare DNS Proxy] -->|SSL| E[Traefik Reverse Proxy]
     subgraph Docker_Swarm_Cluster
         E --> Q{{Hetzner CCX23 Cluster}}
     end
-    Q --> T(GroqCloud DeepSeek-32B)
-    Q --> V(Systeme.io CRM/Email)
+    Q -->|Prompts| T(GroqCloud DeepSeek-32B)
+    Q -->|API| V(Systeme.io CRM/Email)
+    Q -->|Backup| I([IDrive e2])
 ```
 
-- **Simplified view**: Docker Swarm Cluster on Hetzner hosts all components, connects to external GroqCloud and Systeme.io via Traefik, routed through Cloudflare.
+- **Simplified view**: Docker Swarm Cluster on Hetzner connects to external GroqCloud, Systeme.io, and IDrive e2 via Traefik, routed through Cloudflare.
 
 ### Phase I: Operations
 ```mermaid
 flowchart TD
-    U[Cloudflare DNS Proxy] --> E[Traefik Reverse Proxy]
+    U[Cloudflare DNS Proxy] -->|SSL| E[Traefik Reverse Proxy]
     subgraph Docker_Swarm_Cluster
-        E --> A[Rocket.Chat @Olga]
-        A --> B{{OLGA Ops Lightweight GenAI Agent}}
-        B --> C([SurrealDB TiKV])
-        B --> F[Heliocone]
-        R([Restic Backups]) --> I([IDrive e2])
+        E -->|WebSocket| A[Rocket.Chat @Olga]
+        A -->|Ops| B{{OLGA Ops Lightweight GenAI Agent}}
+        B -->|Queries| C([SurrealDB TiKV])
+        B -->|Enhances| F[Heliocone]
+        R([Restic Backups]) -->|Backup| I([IDrive e2])
         S[Netdata Monitoring]
     end
-    B --> T(GroqCloud DeepSeek-32B)
+    B -->|Prompts| T(GroqCloud DeepSeek-32B)
 ```
 
-- **Focus**: OLGA runs ops within Docker Swarm Cluster, using Rocket.Chat, SurrealDB (storage), and Restic/IDrive e2 (backup).
+- **Focus**: OLGA manages ops within Docker Swarm Cluster, querying SurrealDB and using GroqCloud, with backups to IDrive e2.
 
 ### Phase II: Marketing
 ```mermaid
 flowchart TD
-    U[Cloudflare DNS Proxy] --> E[Traefik Reverse Proxy]
+    U[Cloudflare DNS Proxy] -->|SSL| E[Traefik Reverse Proxy]
     subgraph Docker_Swarm_Cluster
-        E --> A[Rocket.Chat @Olga]
-        A --> B{{OLGA Ops Lightweight GenAI Agent}}
-        B --> C([SurrealDB TiKV])
-        E --> G[Matomo Analytics]
-        E --> I[YOURLS URL Tracking]
-        E --> J[Postiz Scheduling]
-        G --> H{{EMMA Efficient Multichannel Marketing Agent}}
-        I --> H
-        J --> H
-        H --> C
-        B --> F[Heliocone]
-        H --> F
-        R([Restic Backups]) --> K([IDrive e2])
+        E -->|WebSocket| A[Rocket.Chat @Olga]
+        A -->|Ops| B{{OLGA Ops Lightweight GenAI Agent}}
+        B -->|Queries| C([SurrealDB TiKV])
+        E -->|Analytics| G[Matomo Analytics]
+        E -->|Links| I[YOURLS URL Tracking]
+        E -->|Posts| J[Postiz Scheduling]
+        G -->|Data| H{{EMMA Efficient Multichannel Marketing Agent}}
+        I -->|Data| H
+        J -->|Content| H
+        H -->|Queries| C
+        B -->|Enhances| F[Heliocone]
+        H -->|Enhances| F
+        R([Restic Backups]) -->|Backup| K([IDrive e2])
         S[Netdata Monitoring]
     end
-    B --> T(GroqCloud DeepSeek-32B)
-    H --> T
-    H --> V(Systeme.io CRM/Email)
+    B -->|Prompts| T(GroqCloud DeepSeek-32B)
+    H -->|Prompts| T
+    H -->|API| V(Systeme.io CRM/Email)
 ```
 
-- **Focus**: Adds EMMA and marketing tools, all within Docker Swarm Cluster, with SurrealDB and Restic/IDrive e2 storage.
+- **Focus**: Adds EMMA for marketing within Docker Swarm Cluster, integrating Matomo, YOURLS, and Postiz, with backups to IDrive e2.
 
 ### Phase III: Financial
 ```mermaid
 flowchart TD
-    U[Cloudflare DNS Proxy] --> E[Traefik Reverse Proxy]
+    U[Cloudflare DNS Proxy] -->|SSL| E[Traefik Reverse Proxy]
     subgraph Docker_Swarm_Cluster
-        E --> A[Rocket.Chat @Olga]
-        A --> B{{OLGA Ops Lightweight GenAI Agent}}
-        B --> C([SurrealDB TiKV])
-        E --> G[Matomo Analytics]
-        E --> I[YOURLS URL Tracking]
-        E --> J[Postiz Scheduling]
-        G --> H{{EMMA Efficient Multichannel Marketing Agent}}
-        I --> H
-        J --> H
-        H --> C
-        A --> L{{RAIFA Responsive AI Financial Agent}}
-        L --> C
-        M[Banking API] --> L
-        N[Guesty API] --> L
-        O[Stripe API] --> L
-        P[Tracking Matomo] --> L
-        B --> F[Heliocone]
-        H --> F
-        L --> F
-        R([Restic Backups]) --> Q([IDrive e2])
+        E -->|WebSocket| A[Rocket.Chat @Olga]
+        A -->|Ops| B{{OLGA Ops Lightweight GenAI Agent}}
+        B -->|Queries| C([SurrealDB TiKV])
+        E -->|Analytics| G[Matomo Analytics]
+        E -->|Links| I[YOURLS URL Tracking]
+        E -->|Posts| J[Postiz Scheduling]
+        G -->|Data| H{{EMMA Efficient Multichannel Marketing Agent}}
+        I -->|Data| H
+        J -->|Content| H
+        H -->|Queries| C
+        A -->|Reports| L{{RAIFA Responsive AI Financial Agent}}
+        L -->|Queries| C
+        M[Banking API] -->|Data| L
+        N[Guesty API] -->|Data| L
+        O[Stripe API] -->|Data| L
+        P[Tracking Matomo] -->|Data| L
+        B -->|Enhances| F[Heliocone]
+        H -->|Enhances| F
+        L -->|Enhances| F
+        R([Restic Backups]) -->|Backup| Q([IDrive e2])
         S[Netdata Monitoring]
     end
-    B --> T(GroqCloud DeepSeek-32B)
-    H --> T
-    L --> T
-    H --> V(Systeme.io CRM/Email)
+    B -->|Prompts| T(GroqCloud DeepSeek-32B)
+    H -->|Prompts| T
+    L -->|Prompts| T
+    H -->|API| V(Systeme.io CRM/Email)
 ```
 
-- **Focus**: Adds RAIFA and financial APIs, fully integrated within Docker Swarm Cluster, with storage via SurrealDB and Restic/IDrive e2.
+- **Focus**: Adds RAIFA for financials within Docker Swarm Cluster, using APIs and reporting via Rocket.Chat, with backups to IDrive e2.
 
 ## Deployment
 - **Hetzner CCX23 Cluster**:
-  - Start: 2 nodes (~$64/month, 8 vCPUs, 32 GB, 320 GB) for Phase I (0-20 properties, ~5 QPS).
-  - Scale: Add ~1 node (~$27.09) per phase or ~50-75 properties—e.g., 3 nodes (~$91/month) at 20-100, 4 (~$118/month) at 100+.
-- **Docker Swarm**:
+  - Scales horizontally with Docker Swarm based on property count and phase needs.
   - Services: `/opt/olga`, `/opt/emma`, `/opt/raifa` (separate Compose files), plus core/supporting tools.
   - Command: `docker swarm init`, `docker stack deploy -c <app>/docker-compose.yml bnb_<app>` (e.g., `bnb_olga`).
 - **Ansible**: Roles in `/opt/<app>`—e.g., `ansible-playbook deploy.yml -t olga`.
 - **Networking**:
-  - **0-20**: Cloudflare DNS Proxy—DDoS protection, SSL (~10-50ms latency).
-  - **20+**: Add Hetzner private network (~$1.03/month)—~0.1-1ms node latency, firewall for security (e.g., RAIFA’s financial data).
+  - **0-20 Properties**: Cloudflare DNS Proxy—DDoS protection, SSL (~10-50ms latency).
+  - **20+ Properties**: Add Hetzner private network (~$1.03/month)—~0.1-1ms node latency, firewall for security (e.g., RAIFA’s financial data).
 
-## Resource Estimates
-- **0-20 Properties**: ~5.5-6 vCPUs, ~1.6-1.8 GB RAM, ~150-200 GB, 2 CCX23 (~$64/month), API ~$20-$50.
-- **20-100 Properties**: ~7.5-9 vCPUs, ~2.2-2.5 GB RAM, ~180-220 GB, 3 CCX23 (~$91/month), API ~$50-$150.
-- **100+ Properties**: ~11-15 vCPUs, ~3-4 GB RAM, ~200-260 GB, 4 CCX23 (~$118/month), API ~$150-$350.
-- **Dev Cost**: ~$6K-$10K (Phase III integration, AI logic).
+## Cost Comparison
+| **Phase** | **vCPUs** | **RAM (GB)** | **Storage (GB)** | **Nodes (CCX23)** | **Total Cost/Month** | **API Costs/Month** |
+|-----------|-----------|--------------|------------------|-------------------|----------------------|---------------------|
+| **0-20 Properties** |
+| I         | 5.5-6     | 1.6-1.8     | 150-200          | 2 (~$54.18 + $10) | ~$64          | $20-$50            |
+| II        | 0.5-1.5   | 0.2-0.4     | 10-20            | 0                 | ~$0           | $10-$30            |
+| III       | 0.5-1     | 0.2-0.3     | 10-20            | 0                 | ~$0           | $10-$20            |
+| Total     | 6.5-8     | 2-2.5       | 170-220          | 2 (~$54.18 + $10) | ~$64          | $40-$100           |
+| **20-100 Properties** |
+| I         | 6-7       | 1.8-2       | 160-210          | 2 (~$54.18 + $10) | ~$64          | $30-$80            |
+| II        | 1.5-2     | 0.4-0.5     | 20-30            | 1 (~$27.09)       | ~$27          | $20-$70            |
+| III       | 1.5-2     | 0.3-0.5     | 10-20            | 0                 | ~$0           | $30-$50            |
+| Total     | 9-11      | 2.5-3       | 190-240          | 3 (~$81.27 + $10) | ~$91          | $80-$200           |
+| **100+ Properties** |
+| I         | 7-9       | 2-2.5       | 170-220          | 3 (~$81.27 + $10) | ~$91          | $50-$100           |
+| II        | 2-3       | 0.5-0.8     | 20-30            | 0                 | ~$0           | $30-$100           |
+| III       | 2-3       | 0.5-0.7     | 10-30            | 1 (~$27.09)       | ~$27          | $70-$150           |
+| Total     | 11-15     | 3-4         | 200-260          | 4 (~$108.36 + $10)| ~$118        | $150-$350          |
+
+- **Notes**: Costs are exclusive per phase—I (OLGA + core), II (EMMA + marketing), III (RAIFA + financials). Total sums I + II + III at each property scale. One-time dev cost: ~$6K-$10K (full Phase III rollout).
 
 ## Scaling
-- **Horizontal**: Add CCX23 nodes in Swarm—e.g., 4 nodes (~16 vCPUs) at 100+ properties, up to ~5-6 (~$145-$172/month) at 500-1,000 properties.
+- **Horizontal**: Add ~1 CCX23 node (~$27.09) as properties grow or phases advance—e.g., 2 nodes at 0-20 (all phases), 3 at 20-100, 4 at 100+ (Phase III).
 - **Services**: Scale agents independently—e.g., `docker service scale bnb_raifa=3` for financial load.
 
 ## Getting Started
