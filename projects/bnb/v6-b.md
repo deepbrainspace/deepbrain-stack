@@ -44,7 +44,7 @@ flowchart TD
         E --> Q{{AI Agents - OLGA, EMMA, RAIFA}}
     end
     Q <-->|Prompts| T[GroqCloud DeepSeek-32B]
-    Q <-- |API| V[External Data Sources]
+    V[External Data Sources] -->|API| Q
     Q -->|Backup| I[(IDrive e2)]
 ```
 
