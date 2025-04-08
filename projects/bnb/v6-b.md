@@ -35,7 +35,7 @@ This project automates operations, marketing, and financial management for a BnB
 ## Architecture Diagram
 ```mermaid
 graph TD
-    subgraph "Phase I (Ops)" #blue
+    subgraph "Phase I (Ops)"
         A[Rocket.Chat<br>@Olga] -->|WebSocket| B[OLGA<br>Ops Lightweight GenAI Agent]
         B -->|Queries| C[SurrealDB<br>TiKV]
         B -->|Prompts| D[GroqCloud<br>DeepSeek-32B]
@@ -43,7 +43,7 @@ graph TD
         F[Heliocone] -->|Enhances| B
     end
 
-    subgraph "Phase II (Marketing)" #green
+    subgraph "Phase II (Marketing)"
         G[Matomo<br>Analytics] -->|Data| H[EMMA<br>Efficient Multichannel Marketing Agent]
         I[YOURLS<br>URL Tracking] -->|Data| H
         J[Postiz<br>Scheduling] -->|Content| H
@@ -55,7 +55,7 @@ graph TD
         E -->|443| J
     end
 
-    subgraph "Phase III (Financial)" #orange
+    subgraph "Phase III (Financial)"
         L[RAIFA<br>Responsive AI Financial Agent] -->|Queries| C
         L -->|Prompts| D
         L -->|Board Calls| A
