@@ -56,7 +56,7 @@ flowchart TD
 graph TD
     A[Guesty] -->|Webhooks| B[(SurrealDB<br>TiKV Backend<br>Graph + Document + Vector)]
     C[Aircall] -->|Webhooks| B
-    B -->|SurrealQL Queries<br>Graph + Vector| D[AI Agent - OLGA]
+    B -->|SurrealQL Queries<br>Graph + Vector| D[Agent OLGA]
     D -->|English Question| E[GroqCloud<br>DeepSeek-Qwen32B or GPT-4o Mini]
     E -->|Generated SurrealQL| D
     D -->|Raw Data| E
@@ -119,7 +119,7 @@ graph TD
     C[Guesty API] -->|Booking Data| B
     D[Stripe API] -->|Payment Data| B
     E[Matomo] -->|Tracking Data| B
-    F[Rocket.Chat] -->|Board Questions<br>e.g. Q2 profits?| G{{RAIFA Responsive AI Financial Agent}}
+    F[Rocket.Chat] -->|Board Questions<br>e.g. Q2 profits?| G{{Agent RAIFA <br>Responsive AI Financial Agent}}
     B -->|SurrealQL Queries<br>Graph + Vector| G
     G -->|Posts Results| F
     M[Heliocone] -->|Enhances| G
