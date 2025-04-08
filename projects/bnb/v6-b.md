@@ -53,18 +53,21 @@ flowchart TD
 ### Phase I: Operations
 ```mermaid
 graph TD
+graph TD
     A[Guesty] -->|Webhooks| B[SurrealDB<br>TiKV Backend<br>Graph + Document + Vector]
     C[Aircall] -->|Webhooks| B
-    subgraph Hetzner_CCX23_Cluster_Docker_Swarm[Hetzner Swarm Cluster]
+    K[GroqCloud<br>DeepSeek-32B]
+    H[IDrive e2]
+    subgraph Hetzner_CCX23_Cluster_Docker_Swarm[Hetzner Docker Cluster]
         J[Traefik] -->|SSL| F[Rocket.Chat]
         F -->|Staff Questions<br>e.g. What was Jane's last request?| D{{OLGA Ops Lightweight GenAI Agent}}
         B -->|SurrealQL Queries<br>Graph + Vector| D
-        D -->|English Question| K[GroqCloud<br>DeepSeek-32B]
+        D -->|English Question| K
         K -->|Generated SurrealQL| D
         D -->|Raw Data| K
         K -->|Natural Response| D
         D -->|Posts Results| F
-        G[Restic] -->|Backup| H[IDrive e2]
+        G[Restic] -->|Backup| H
         I[Netdata] -->|Monitoring| D
         E[Heliocone] -->|Enhances| D
         subgraph Data_Sources
