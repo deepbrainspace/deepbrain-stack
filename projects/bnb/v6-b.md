@@ -42,10 +42,11 @@ flowchart TD
     U[Cloudflare DNS Proxy] -->|SSL| E[Traefik Reverse Proxy]
     subgraph Hetzner_CCX23_Cluster_Docker_Swarm[Hetzner Swarm Cluster]
         E --> Q{{AI Agents - OLGA, EMMA, RAIFA}}
+        R[Restic]
     end
     Q <-->|Prompts| T[GroqCloud DeepSeek-32B]
     V[External Data Sources] -->|API| Q
-    Q -->|Backup| I[(IDrive e2)]
+    R -->|Backup| I[(IDrive e2)]
 ```
 
 - **Simplified view**: Hetzner CCX23 Cluster (running Docker Swarm) hosts AI Agents (OLGA, EMMA, RAIFA), connecting to external GroqCloud, Systeme.io, and IDrive e2 via Traefik, routed through Cloudflare.
