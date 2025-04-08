@@ -24,13 +24,15 @@ This project automates operations, marketing, and financial management for a BnB
   - **Matomo**: Analytics tracking.
   - **YOURLS**: URL shortening/tracking.
   - **Postiz**: Social media scheduling.
-  - **Systeme.io**: External CRM/email automation.
 - **Phase III Additions** (on Hetzner):
-  - APIs: Tracking (Matomo), Banking (e.g., Plaid), Guesty, Stripe.
+  - None—relies on external APIs.
 - **External**:
   - **GroqCloud**: DeepSeek-32B LLM (~1-1.5s responses).
   - **Cloudflare DNS Proxy**: DDoS protection, SSL.
   - **IDrive e2**: Cloud backup storage.
+  - **Guesty**, **Aircall**: Phase I data sources.
+  - **Systeme.io**: Phase II data source.
+  - **Banking API**, **Guesty API**, **Stripe API**: Phase III data sources.
 
 ## Architecture Diagrams
 
@@ -38,12 +40,12 @@ This project automates operations, marketing, and financial management for a BnB
 ```mermaid
 flowchart TD
     U[Cloudflare DNS Proxy] -->|SSL| E[Traefik Reverse Proxy]
-    subgraph Hetzner_CCX23_Cluster_Docker_Swarm[Hetzner CCX23 Cluster]
-        E --> Q{{AI Agents - OLGA, EMMA, RAIFA}}
+    subgraph Hetzner_CCX23_Cluster_Docker_Swarm[Hetzner CCX23 Cluster (Docker Swarm)]
+        E --> Q{{AI Agents (OLGA, EMMA, RAIFA)}}
     end
-    Q -->|Prompts| T(GroqCloud DeepSeek-32B)
-    Q -->|API| V(Systeme.io CRM/Email)
-    Q -->|Backup| I([IDrive e2])
+    Q -->|Prompts| T[GroqCloud DeepSeek-32B]
+    Q -->|API| V[Systeme.io CRM/Email]
+    Q -->|Backup| I[IDrive e2]
 ```
 
 - **Simplified view**: Hetzner CCX23 Cluster (running Docker Swarm) hosts AI Agents (OLGA, EMMA, RAIFA), connecting to external GroqCloud, Systeme.io, and IDrive e2 via Traefik, routed through Cloudflare.
@@ -51,129 +53,122 @@ flowchart TD
 ### Phase I: Operations
 ```mermaid
 graph TD
-    subgraph Hetzner_CCX23_Cluster_Docker_Swarm[Hetzner CCX23 Cluster]
-        A[Guesty] -->|Webhooks| B[SurrealDB<br>TiKV Backend<br>Graph + Document + Vector]
-        C[Rocket.Chat] -->|Staff Questions<br>e.g. What was Jane's last request?| D{{OLGA Ops Lightweight GenAI Agent}}
+    A[Guesty] -->|Webhooks| B[SurrealDB<br>TiKV Backend<br>Graph + Document + Vector]
+    C[Aircall] -->|Webhooks| B
+    subgraph Hetzner_CCX23_Cluster_Docker_Swarm[Hetzner CCX23 Cluster (Docker Swarm)]
+        J[Traefik] -->|SSL| F[Rocket.Chat]
+        F -->|Staff Questions<br>e.g. What was Jane's last request?| D{{OLGA Ops Lightweight GenAI Agent}}
         B -->|SurrealQL Queries<br>Graph + Vector| D
-        D -->|English Question| E[GroqCloud<br>DeepSeek-32B]
-        E -->|Generated SurrealQL| D
-        D -->|Raw Data| E
-        E -->|Natural Response| D
-        D -->|Posts Results| C
-        F[Heliocone] -->|Enhances| D
-        G[Restic] -->|Backup| H([IDrive e2])
+        D -->|English Question| K[GroqCloud<br>DeepSeek-32B]
+        K -->|Generated SurrealQL| D
+        D -->|Raw Data| K
+        K -->|Natural Response| D
+        D -->|Posts Results| F
+        G[Restic] -->|Backup| H[IDrive e2]
         I[Netdata] -->|Monitoring| D
-        J[Traefik] -->|SSL| C
+        E[Heliocone] -->|Enhances| D
         subgraph Data_Sources
-            A
+            B
         end
         subgraph Backend
-            B
             G
             I
         end
         subgraph Processing
             D
             E
-            F
         end
         subgraph Interface
-            C
+            F
             J
         end
     end
-    J -->|SSL| K[Cloudflare DNS Proxy]
+    J -->|SSL| L[Cloudflare DNS Proxy]
 ```
 
-- **Focus**: OLGA processes operational data from Guesty via SurrealDB, answers staff questions through Rocket.Chat, enhanced by GroqCloud and Heliocone, with backups to IDrive e2.
+- **Focus**: OLGA processes operational data from external Guesty and Aircall via SurrealDB, answers staff questions through Rocket.Chat, enhanced by GroqCloud and Heliocone, with backups to IDrive e2.
 
 ### Phase II: Marketing
 ```mermaid
 graph TD
-    subgraph Hetzner_CCX23_Cluster_Docker_Swarm[Hetzner CCX23 Cluster]
-        A[Matomo] -->|Analytics Data| B[SurrealDB<br>TiKV Backend<br>Graph + Document + Vector]
+    G[Systeme.io] -->|CRM/Email Data| B[SurrealDB<br>TiKV Backend<br>Graph + Document + Vector]
+    subgraph Hetzner_CCX23_Cluster_Docker_Swarm[Hetzner CCX23 Cluster (Docker Swarm)]
+        A[Matomo] -->|Analytics Data| B
         C[YOURLS] -->|Link Tracking| B
-        D[Postiz] -->|Scheduled Posts| E{{EMMA Efficient Multichannel Marketing Agent}}
+        J[Traefik] -->|SSL| D[Postiz]
+        D -->|Scheduled Posts| E{{EMMA Efficient Multichannel Marketing Agent}}
         B -->|SurrealQL Queries<br>Graph + Vector| E
         E -->|English Question| F[GroqCloud<br>DeepSeek-32B]
         F -->|Generated SurrealQL| E
         E -->|Raw Data| F
         F -->|Content Ideas| E
         E -->|Posts Content| D
-        G[Systeme.io] -->|CRM/Email Data| E
-        H[Heliocone] -->|Enhances| E
-        I[Restic] -->|Backup| J([IDrive e2])
+        H[Restic] -->|Backup| I[IDrive e2]
         K[Netdata] -->|Monitoring| E
-        L[Traefik] -->|SSL| D
+        L[Heliocone] -->|Enhances| E
         subgraph Data_Sources
             A
+            B
             C
-            G
         end
         subgraph Backend
-            B
-            I
+            H
             K
         end
         subgraph Processing
             E
-            F
-            H
+            L
         end
         subgraph Interface
             D
-            L
+            J
         end
     end
-    L -->|SSL| M[Cloudflare DNS Proxy]
+    J -->|SSL| M[Cloudflare DNS Proxy]
 ```
 
-- **Focus**: EMMA generates marketing content using Matomo, YOURLS, and SurrealDB data, schedules via Postiz, integrates with Systeme.io, enhanced by GroqCloud and Heliocone, with backups to IDrive e2.
+- **Focus**: EMMA generates marketing content using internal Matomo, YOURLS, and SurrealDB data, schedules via Postiz, integrates with external Systeme.io, enhanced by GroqCloud and Heliocone, with backups to IDrive e2.
 
 ### Phase III: Financial
 ```mermaid
 graph TD
-    subgraph Hetzner_CCX23_Cluster_Docker_Swarm[Hetzner CCX23 Cluster]
-        A[Banking API] -->|Transaction Data| B[SurrealDB<br>TiKV Backend<br>Graph + Document + Vector]
-        C[Guesty API] -->|Booking Data| B
-        D[Stripe API] -->|Payment Data| B
+    A[Banking API] -->|Transaction Data| B[SurrealDB<br>TiKV Backend<br>Graph + Document + Vector]
+    C[Guesty API] -->|Booking Data| B
+    D[Stripe API] -->|Payment Data| B
+    subgraph Hetzner_CCX23_Cluster_Docker_Swarm[Hetzner CCX23 Cluster (Docker Swarm)]
         E[Matomo] -->|Tracking Data| B
-        F[Rocket.Chat] -->|Board Questions<br>e.g. Q2 profits?| G{{RAIFA Responsive AI Financial Agent}}
+        J[Traefik] -->|SSL| F[Rocket.Chat]
+        F -->|Board Questions<br>e.g. Q2 profits?| G{{RAIFA Responsive AI Financial Agent}}
         B -->|SurrealQL Queries<br>Graph + Vector| G
         G -->|English Question| H[GroqCloud<br>DeepSeek-32B]
         H -->|Generated SurrealQL| G
         G -->|Raw Data| H
         H -->|Financial Insights| G
         G -->|Posts Results| F
-        I[Heliocone] -->|Enhances| G
-        J[Restic] -->|Backup| K([IDrive e2])
+        I[Restic] -->|Backup| K[IDrive e2]
         L[Netdata] -->|Monitoring| G
-        M[Traefik] -->|SSL| F
+        M[Heliocone] -->|Enhances| G
         subgraph Data_Sources
-            A
-            C
-            D
+            B
             E
         end
         subgraph Backend
-            B
-            J
+            I
             L
         end
         subgraph Processing
             G
-            H
-            I
+            M
         end
         subgraph Interface
             F
-            M
+            J
         end
     end
-    M -->|SSL| N[Cloudflare DNS Proxy]
+    J -->|SSL| N[Cloudflare DNS Proxy]
 ```
 
-- **Focus**: RAIFA analyzes financial data from Banking, Guesty, Stripe, and Matomo APIs via SurrealDB, answers board questions through Rocket.Chat, enhanced by GroqCloud and Heliocone, with backups to IDrive e2.
+- **Focus**: RAIFA analyzes financial data from external Banking, Guesty, Stripe APIs and internal Matomo via SurrealDB, answers board questions through Rocket.Chat, enhanced by GroqCloud and Heliocone, with backups to IDrive e2.
 
 ## Deployment
 - **Hetzner CCX23 Cluster**:
