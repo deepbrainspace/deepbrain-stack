@@ -102,12 +102,11 @@ graph TD
         J[Traefik] -->|SSL| D[Postiz]
         D -->|Scheduled Posts| E{{EMMA Efficient Multichannel Marketing Agent}}
         B -->|SurrealQL Queries<br>Graph + Vector| E
-        E -->|English Question| F[GroqCloud<br>DeepSeek-32B]
         F -->|Generated SurrealQL| E
         E -->|Raw Data| F
+        H[Restic]
         F -->|Content Ideas| E
         E -->|Posts Content| D
-        H[Restic] -->|Backup| I[IDrive e2]
         K[Netdata] -->|Monitoring| E
         L[Heliocone] -->|Enhances| E
         subgraph Data_Sources
@@ -128,6 +127,9 @@ graph TD
             J
         end
     end
+    E -->|English Question| F[GroqCloud<br>DeepSeek-32B]
+    H -->|Backup| I[(IDrive e2)]
+           
     J -->|SSL| M[Cloudflare DNS Proxy]
 ```
 
@@ -144,12 +146,11 @@ graph TD
         J[Traefik] -->|SSL| F[Rocket.Chat]
         F -->|Board Questions<br>e.g. Q2 profits?| G{{RAIFA Responsive AI Financial Agent}}
         B -->|SurrealQL Queries<br>Graph + Vector| G
-        G -->|English Question| H[GroqCloud<br>DeepSeek-32B]
         H -->|Generated SurrealQL| G
         G -->|Raw Data| H
         H -->|Financial Insights| G
         G -->|Posts Results| F
-        I[Restic] -->|Backup| K[IDrive e2]
+        I[Restic]
         L[Netdata] -->|Monitoring| G
         M[Heliocone] -->|Enhances| G
         subgraph Data_Sources
@@ -169,6 +170,9 @@ graph TD
             J
         end
     end
+    I -->|Backup| K[(IDrive e2)]
+
+    G -->|English Question| H[GroqCloud<br>DeepSeek-32B]
     J -->|SSL| N[Cloudflare DNS Proxy]
 ```
 
