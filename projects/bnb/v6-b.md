@@ -103,10 +103,6 @@ graph TD
             E
             L
         end
-        subgraph Interface
-            D
-            J
-        end
     end
     F -->|Generated SurrealQL| E
     E -->|Raw Data| F
@@ -125,12 +121,9 @@ graph TD
     D[Stripe API] -->|Payment Data| B
     subgraph Hetzner_CCX23_Cluster_Docker_Swarm[Hetzner Swarm Cluster]
         E[Matomo] -->|Tracking Data| B
-        J[Traefik] -->|SSL| F[Rocket.Chat]
         F -->|Board Questions<br>e.g. Q2 profits?| G{{RAIFA Responsive AI Financial Agent}}
         B -->|SurrealQL Queries<br>Graph + Vector| G
         G -->|Posts Results| F
-        I[Restic]
-        L[Netdata] -->|Monitoring| G
         M[Heliocone] -->|Enhances| G
         subgraph Data_Sources
             B
@@ -144,18 +137,12 @@ graph TD
             G
             M
         end
-        subgraph Interface
-            F
-            J
-        end
     end
-    I -->|Backup| K[(IDrive e2)]
     H -->|Generated SurrealQL| G
     G -->|Raw Data| H
     H -->|Financial Insights| G
         
     G -->|English Question| H[GroqCloud<br>DeepSeek-32B]
-    J -->|SSL| N[Cloudflare DNS Proxy]
 ```
 
 - **Focus**: RAIFA analyzes financial data from external Banking, Guesty, Stripe APIs and internal Matomo via SurrealDB, answers board questions through Rocket.Chat, enhanced by GroqCloud and Heliocone, with backups to IDrive e2.
