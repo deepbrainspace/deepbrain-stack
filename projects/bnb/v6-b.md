@@ -1,9 +1,7 @@
----
-
 # BnB Automation System README
 
 ## Overview
-This project automates operations, marketing, and financial management for a BnB business, scaling from 0-20 to 100+ properties. Built on a **Hetzner CCX23 cluster** with **Docker Swarm**, it leverages **Rust-based AI agents**, **SurrealDB (TiKV)**, and **GroqCloud DeepSeek-R1-Distill-Qwen-32B** for intelligent automation. The system evolves in three phases:
+This project automates operations, marketing, and financial management for a BnB business, scaling from 0-20 to 100+ properties. Built on a **Hetzner CCX23 cluster** with **Docker Swarm**, it hosts **Rust-based AI agents**, **SurrealDB (TiKV)**, and supporting services, leveraging **GroqCloud DeepSeek-R1-Distill-Qwen-32B** for AI reasoning. **Cloudflare DNS Proxy** provides external security/routing. The system evolves in three phases:
 
 - **Phase I**: Operations with **OLGA** (Ops Lightweight GenAI Agent).
 - **Phase II**: Marketing with **EMMA** (Efficient Multichannel Marketing Agent).
@@ -15,74 +13,168 @@ This project automates operations, marketing, and financial management for a BnB
   - **EMMA**: Marketing automation/content generation (e.g., promos via Postiz).
   - **RAIFA**: Financial insights, reports, board calls (e.g., “Q2 profits”).
   - Shared `bnb-core` crate for SurrealDB/GroqCloud logic.
-- **Core Services**:
+- **Core Services** (on Hetzner):
   - **Rocket.Chat**: Staff/stakeholder communication hub.
-  - **SurrealDB (TiKV)**: Multi-model DB (graph, vector, relational) for ops, marketing, financial data.
-  - **GroqCloud**: DeepSeek-32B LLM for AI reasoning (~1-1.5s responses).
-  - **Traefik**: Reverse proxy for routing (80/443).
-- **Supporting Tools**:
+  - **SurrealDB (TiKV)**: Multi-model DB for ops, marketing, financial data.
+  - **Traefik**: Reverse proxy (80/443).
   - **Restic**: Backups to IDrive e2 (~$10/month).
   - **Netdata**: Monitoring (CPU, RAM, network).
   - **Heliocone**: Enhances LLM interactions.
-- **Phase II Additions**:
+- **Phase II Additions** (on Hetzner):
   - **Matomo**: Analytics tracking.
   - **YOURLS**: URL shortening/tracking.
   - **Postiz**: Social media scheduling.
   - **Systeme.io**: External CRM/email automation.
-- **Phase III Additions**:
+- **Phase III Additions** (on Hetzner):
   - APIs: Tracking (Matomo), Banking (e.g., Plaid), Guesty, Stripe.
+- **External**:
+  - **GroqCloud**: DeepSeek-32B LLM (~1-1.5s responses).
+  - **Cloudflare DNS Proxy**: DDoS protection, SSL.
 
-## Architecture Diagram
+## Architecture Diagrams
+
+### Overall Architecture
 ```mermaid
 graph TD
-    subgraph Phase_I_Ops
-        A[Rocket.Chat<br>@Olga] -->|WebSocket| B[OLGA<br>Ops Lightweight GenAI Agent]
-        B -->|Queries| C[SurrealDB<br>TiKV]
-        B -->|Prompts| D[GroqCloud<br>DeepSeek-32B]
-        E[Traefik<br>Reverse Proxy] -->|443| A
-        F[Heliocone] -->|Enhances| B
+    subgraph Hetzner_CCX23_Cluster
+        subgraph Phase_I_Ops
+            A[Rocket.Chat<br>@Olga] -->|WebSocket| B[OLGA<br>Ops Lightweight GenAI Agent]
+            B -->|Queries| C[SurrealDB<br>TiKV]
+            E[Traefik<br>Reverse Proxy] -->|443| A
+            F[Heliocone] -->|Enhances| B
+        end
+
+        subgraph Phase_II_Marketing
+            G[Matomo<br>Analytics] -->|Data| H[EMMA<br>Efficient Multichannel Marketing Agent]
+            I[YOURLS<br>URL Tracking] -->|Data| H
+            J[Postiz<br>Scheduling] -->|Content| H
+            H -->|Queries| C
+            E -->|443| G
+            E -->|443| I
+            E -->|443| J
+        end
+
+        subgraph Phase_III_Financial
+            L[RAIFA<br>Responsive AI Financial Agent] -->|Queries| C
+            L -->|Board Calls| A
+            M[Banking API] -->|Data| L
+            N[Guesty API] -->|Data| L
+            O[Stripe API] -->|Data| L
+            P[Tracking<br>Matomo] -->|Data| L
+        end
+
+        Q[Docker Swarm<br>Nodes] -->|Hosts| E
+        Q -->|Hosts| C
+        Q -->|Hosts| B
+        Q -->|Hosts| H
+        Q -->|Hosts| L
+        R[Restic<br>Backups] -->|IDrive e2| Q
+        S[Netdata<br>Monitoring] -->|Metrics| Q
     end
 
-    subgraph Phase_II_Marketing
+    T[GroqCloud<br>DeepSeek-32B] <--|Prompts| B
+    T <--|Prompts| H
+    T <--|Prompts| L
+    U[Cloudflare<br>DNS Proxy] -->|DDoS, SSL| E
+    V[Systeme.io<br>CRM/Email] -->|API| H
+```
+
+- **Hetzner CCX23 Cluster**: Hosts all phases—OLGA, EMMA, RAIFA, and services.
+- **External**: GroqCloud (LLM), Cloudflare (routing/security), Systeme.io (CRM).
+
+### Phase I: Operations
+```mermaid
+graph TD
+    subgraph Hetzner_CCX23_Cluster
+        A[Rocket.Chat<br>@Olga] -->|WebSocket| B[OLGA<br>Ops Lightweight GenAI Agent]
+        B -->|Queries| C[SurrealDB<br>TiKV]
+        E[Traefik<br>Reverse Proxy] -->|443| A
+        F[Heliocone] -->|Enhances| B
+        Q[Docker Swarm<br>Nodes] -->|Hosts| E
+        Q -->|Hosts| C
+        Q -->|Hosts| B
+        R[Restic<br>Backups] -->|IDrive e2| Q
+        S[Netdata<br>Monitoring] -->|Metrics| Q
+    end
+
+    T[GroqCloud<br>DeepSeek-32B] <--|Prompts| B
+    U[Cloudflare<br>DNS Proxy] -->|DDoS, SSL| E
+```
+
+- **Focus**: OLGA automates ops via Rocket.Chat, SurrealDB—all on Hetzner.
+
+### Phase II: Marketing
+```mermaid
+graph TD
+    subgraph Hetzner_CCX23_Cluster
+        A[Rocket.Chat<br>@Olga] -->|WebSocket| B[OLGA<br>Ops Lightweight GenAI Agent]
+        B -->|Queries| C[SurrealDB<br>TiKV]
         G[Matomo<br>Analytics] -->|Data| H[EMMA<br>Efficient Multichannel Marketing Agent]
         I[YOURLS<br>URL Tracking] -->|Data| H
         J[Postiz<br>Scheduling] -->|Content| H
-        K[Systeme.io<br>CRM/Email] -->|API| H
         H -->|Queries| C
-        H -->|Prompts| D
+        E[Traefik<br>Reverse Proxy] -->|443| A
         E -->|443| G
         E -->|443| I
         E -->|443| J
+        F[Heliocone] -->|Enhances| B
+        F -->|Enhances| H
+        Q[Docker Swarm<br>Nodes] -->|Hosts| E
+        Q -->|Hosts| C
+        Q -->|Hosts| B
+        Q -->|Hosts| H
+        R[Restic<br>Backups] -->|IDrive e2| Q
+        S[Netdata<br>Monitoring] -->|Metrics| Q
     end
 
-    subgraph Phase_III_Financial
+    T[GroqCloud<br>DeepSeek-32B] <--|Prompts| B
+    T <--|Prompts| H
+    U[Cloudflare<br>DNS Proxy] -->|DDoS, SSL| E
+    V[Systeme.io<br>CRM/Email] -->|API| H
+```
+
+- **Focus**: Adds EMMA, marketing tools (Matomo, YOURLS, Postiz)—still on Hetzner.
+
+### Phase III: Financial
+```mermaid
+graph TD
+    subgraph Hetzner_CCX23_Cluster
+        A[Rocket.Chat<br>@Olga] -->|WebSocket| B[OLGA<br>Ops Lightweight GenAI Agent]
+        B -->|Queries| C[SurrealDB<br>TiKV]
+        G[Matomo<br>Analytics] -->|Data| H[EMMA<br>Efficient Multichannel Marketing Agent]
+        I[YOURLS<br>URL Tracking] -->|Data| H
+        J[Postiz<br>Scheduling] -->|Content| H
+        H -->|Queries| C
         L[RAIFA<br>Responsive AI Financial Agent] -->|Queries| C
-        L -->|Prompts| D
         L -->|Board Calls| A
         M[Banking API] -->|Data| L
         N[Guesty API] -->|Data| L
         O[Stripe API] -->|Data| L
         P[Tracking<br>Matomo] -->|Data| L
+        E[Traefik<br>Reverse Proxy] -->|443| A
+        E -->|443| G
+        E -->|443| I
+        E -->|443| J
+        F[Heliocone] -->|Enhances| B
+        F -->|Enhances| H
+        F -->|Enhances| L
+        Q[Docker Swarm<br>Nodes] -->|Hosts| E
+        Q -->|Hosts| C
+        Q -->|Hosts| B
+        Q -->|Hosts| H
+        Q -->|Hosts| L
+        R[Restic<br>Backups] -->|IDrive e2| Q
+        S[Netdata<br>Monitoring] -->|Metrics| Q
     end
 
-    subgraph Infrastructure
-        Q[Hetzner CCX23<br>Cluster] -->|Swarm| R[Docker Swarm<br>Nodes]
-        R -->|Hosts| E
-        R -->|Hosts| C
-        R -->|Hosts| B
-        R -->|Hosts| H
-        R -->|Hosts| L
-        S[Restic<br>Backups] -->|IDrive e2| R
-        T[Netdata<br>Monitoring] -->|Metrics| R
-    end
-
+    T[GroqCloud<br>DeepSeek-32B] <--|Prompts| B
+    T <--|Prompts| H
+    T <--|Prompts| L
     U[Cloudflare<br>DNS Proxy] -->|DDoS, SSL| E
+    V[Systeme.io<br>CRM/Email] -->|API| H
 ```
 
-- **Phase I (Blue)**: OLGA drives ops via Rocket.Chat, SurrealDB, GroqCloud.
-- **Phase II (Green)**: EMMA adds marketing with Matomo, YOURLS, Postiz, Systeme.io.
-- **Phase III (Orange)**: RAIFA handles financials with APIs, integrates with Rocket.Chat.
-- **Infrastructure (Gray)**: Hetzner CCX23 cluster, Swarm, backups, monitoring.
+- **Focus**: Adds RAIFA, financial APIs—fully integrated on Hetzner.
 
 ## Deployment
 - **Hetzner CCX23 Cluster**:
@@ -117,10 +209,3 @@ graph TD
 ## Future Considerations
 - **HA**: Revisit high availability at 500+ properties (e.g., MongoDB/TiKV replication).
 - **Custom LLM**: Explore RunPod serverless (~$1/month) for predictive financial modeling if needed.
-
-
-### Notes on Mermaid Diagram
-- **Colors**: Mermaid doesn’t natively support `#fill` in subgraphs, but I’ve added `style` directives with hex codes (blue: `#e6f3ff`, green: `#e6ffe6`, orange: `#fff2e6`, gray: `#f2f2f2`)—render this in a Mermaid-compatible tool (e.g., Mermaid Live Editor) for visual distinction.
-- **Layout**: Top-down flow—external (Cloudflare) → Traefik → phased components → infrastructure.
-
-This README and diagram give your team a clear roadmap—OLGA, EMMA, RAIFA shine as the system’s stars!
