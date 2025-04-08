@@ -35,7 +35,7 @@ This project automates operations, marketing, and financial management for a BnB
 ## Architecture Diagram
 ```mermaid
 graph TD
-    subgraph "Phase I - Ops"
+    subgraph Phase_I_Ops
         A[Rocket.Chat<br>@Olga] -->|WebSocket| B[OLGA<br>Ops Lightweight GenAI Agent]
         B -->|Queries| C[SurrealDB<br>TiKV]
         B -->|Prompts| D[GroqCloud<br>DeepSeek-32B]
@@ -43,7 +43,7 @@ graph TD
         F[Heliocone] -->|Enhances| B
     end
 
-    subgraph "Phase II (Marketing)"
+    subgraph Phase_II_Marketing
         G[Matomo<br>Analytics] -->|Data| H[EMMA<br>Efficient Multichannel Marketing Agent]
         I[YOURLS<br>URL Tracking] -->|Data| H
         J[Postiz<br>Scheduling] -->|Content| H
@@ -55,7 +55,7 @@ graph TD
         E -->|443| J
     end
 
-    subgraph "Phase III (Financial)"
+    subgraph Phase_III_Financial
         L[RAIFA<br>Responsive AI Financial Agent] -->|Queries| C
         L -->|Prompts| D
         L -->|Board Calls| A
@@ -65,7 +65,7 @@ graph TD
         P[Tracking<br>Matomo] -->|Data| L
     end
 
-    subgraph "Infrastructure"
+    subgraph Infrastructure
         Q[Hetzner CCX23<br>Cluster] -->|Swarm| R[Docker Swarm<br>Nodes]
         R -->|Hosts| E
         R -->|Hosts| C
@@ -77,11 +77,6 @@ graph TD
     end
 
     U[Cloudflare<br>DNS Proxy] -->|DDoS, SSL| E
-
-    style "Phase I (Ops)" fill:#e6f3ff,stroke:#0066cc
-    style "Phase II (Marketing)" fill:#e6ffe6,stroke:#009900
-    style "Phase III (Financial)" fill:#fff2e6,stroke:#ff6600
-    style "Infrastructure" fill:#f2f2f2,stroke:#666666
 ```
 
 - **Phase I (Blue)**: OLGA drives ops via Rocket.Chat, SurrealDB, GroqCloud.
