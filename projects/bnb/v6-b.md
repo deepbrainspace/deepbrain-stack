@@ -58,11 +58,11 @@ graph TD
     K[GroqCloud<br>DeepSeek-32B]
     H[IDrive e2]
     subgraph Hetzner_CCX23_Cluster_Docker_Swarm[Hetzner Docker Cluster]
+        G[Restic]
         J[Traefik] -->|SSL| F[Rocket.Chat]
         F -->|Staff Questions<br>e.g. What was Jane's last request?| D{{OLGA Ops Lightweight GenAI Agent}}
         B -->|SurrealQL Queries<br>Graph + Vector| D
         D -->|Posts Results| F
-        G[Restic] -->|Backup| H
         I[Netdata] -->|Monitoring| D
         E[Heliocone] -->|Enhances| D
         subgraph Data_Sources
@@ -81,6 +81,8 @@ graph TD
             J
         end
     end
+    
+    G -->|Backup| H
     D -->|English Question| K
     K -->|Generated SurrealQL| D
     D -->|Raw Data| K
