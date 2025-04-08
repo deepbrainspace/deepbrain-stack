@@ -55,7 +55,7 @@ flowchart TD
 graph TD
     A[Guesty] -->|Webhooks| B[SurrealDB<br>TiKV Backend<br>Graph + Document + Vector]
     C[Aircall] -->|Webhooks| B
-    subgraph Hetzner_CCX23_Cluster_Docker_Swarm[Hetzner CCX23 Cluster (Docker Swarm)]
+    subgraph Hetzner_CCX23_Cluster_Docker_Swarm[Hetzner Swarm Cluster]
         J[Traefik] -->|SSL| F[Rocket.Chat]
         F -->|Staff Questions<br>e.g. What was Jane's last request?| D{{OLGA Ops Lightweight GenAI Agent}}
         B -->|SurrealQL Queries<br>Graph + Vector| D
@@ -92,7 +92,7 @@ graph TD
 ```mermaid
 graph TD
     G[Systeme.io] -->|CRM/Email Data| B[SurrealDB<br>TiKV Backend<br>Graph + Document + Vector]
-    subgraph Hetzner_CCX23_Cluster_Docker_Swarm[Hetzner CCX23 Cluster (Docker Swarm)]
+    subgraph Hetzner_CCX23_Cluster_Docker_Swarm[Hetzner Swarm Cluster]
         A[Matomo] -->|Analytics Data| B
         C[YOURLS] -->|Link Tracking| B
         J[Traefik] -->|SSL| D[Postiz]
@@ -135,7 +135,7 @@ graph TD
     A[Banking API] -->|Transaction Data| B[SurrealDB<br>TiKV Backend<br>Graph + Document + Vector]
     C[Guesty API] -->|Booking Data| B
     D[Stripe API] -->|Payment Data| B
-    subgraph Hetzner_CCX23_Cluster_Docker_Swarm[Hetzner CCX23 Cluster (Docker Swarm)]
+    subgraph Hetzner_CCX23_Cluster_Docker_Swarm[Hetzner Swarm Cluster]
         E[Matomo] -->|Tracking Data| B
         J[Traefik] -->|SSL| F[Rocket.Chat]
         F -->|Board Questions<br>e.g. Q2 profits?| G{{RAIFA Responsive AI Financial Agent}}
