@@ -57,75 +57,59 @@ flowchart TD
         A -->|Ops| B{{OLGA Ops Lightweight GenAI Agent}}
         B -->|Queries| C([SurrealDB TiKV])
         B -->|Enhances| F[Heliocone]
-        R([Restic Backups]) -->|Backup| I([IDrive e2])
+        R([Restic Backups])
         S[Netdata Monitoring]
     end
+    R -->|Backup| I([IDrive e2])
     B -->|Prompts| T(GroqCloud DeepSeek-32B)
 ```
 
-- **Focus**: OLGA manages ops within Docker Swarm Cluster, querying SurrealDB and using GroqCloud, with backups to IDrive e2.
+- **Focus**: OLGA manages ops, using Rocket.Chat, SurrealDB, and GroqCloud, with Restic backing up to external IDrive e2.
 
 ### Phase II: Marketing
 ```mermaid
 flowchart TD
     U[Cloudflare DNS Proxy] -->|SSL| E[Traefik Reverse Proxy]
     subgraph Docker_Swarm_Cluster
-        E -->|WebSocket| A[Rocket.Chat @Olga]
-        A -->|Ops| B{{OLGA Ops Lightweight GenAI Agent}}
-        B -->|Queries| C([SurrealDB TiKV])
         E -->|Analytics| G[Matomo Analytics]
         E -->|Links| I[YOURLS URL Tracking]
         E -->|Posts| J[Postiz Scheduling]
         G -->|Data| H{{EMMA Efficient Multichannel Marketing Agent}}
         I -->|Data| H
         J -->|Content| H
-        H -->|Queries| C
-        B -->|Enhances| F[Heliocone]
-        H -->|Enhances| F
-        R([Restic Backups]) -->|Backup| K([IDrive e2])
+        H -->|Queries| C([SurrealDB TiKV])
+        H -->|Enhances| F[Heliocone]
+        R([Restic Backups])
         S[Netdata Monitoring]
     end
-    B -->|Prompts| T(GroqCloud DeepSeek-32B)
-    H -->|Prompts| T
+    R -->|Backup| K([IDrive e2])
+    H -->|Prompts| T(GroqCloud DeepSeek-32B)
     H -->|API| V(Systeme.io CRM/Email)
 ```
 
-- **Focus**: Adds EMMA for marketing within Docker Swarm Cluster, integrating Matomo, YOURLS, and Postiz, with backups to IDrive e2.
+- **Focus**: EMMA handles marketing, integrating Matomo, YOURLS, and Postiz, with SurrealDB and backups to external IDrive e2.
 
 ### Phase III: Financial
 ```mermaid
 flowchart TD
     U[Cloudflare DNS Proxy] -->|SSL| E[Traefik Reverse Proxy]
     subgraph Docker_Swarm_Cluster
-        E -->|WebSocket| A[Rocket.Chat @Olga]
-        A -->|Ops| B{{OLGA Ops Lightweight GenAI Agent}}
-        B -->|Queries| C([SurrealDB TiKV])
-        E -->|Analytics| G[Matomo Analytics]
-        E -->|Links| I[YOURLS URL Tracking]
-        E -->|Posts| J[Postiz Scheduling]
-        G -->|Data| H{{EMMA Efficient Multichannel Marketing Agent}}
-        I -->|Data| H
-        J -->|Content| H
-        H -->|Queries| C
+        E -->|WebSocket| A[Rocket.Chat @Raifa]
         A -->|Reports| L{{RAIFA Responsive AI Financial Agent}}
-        L -->|Queries| C
+        L -->|Queries| C([SurrealDB TiKV])
         M[Banking API] -->|Data| L
         N[Guesty API] -->|Data| L
         O[Stripe API] -->|Data| L
         P[Tracking Matomo] -->|Data| L
-        B -->|Enhances| F[Heliocone]
-        H -->|Enhances| F
-        L -->|Enhances| F
-        R([Restic Backups]) -->|Backup| Q([IDrive e2])
+        L -->|Enhances| F[Heliocone]
+        R([Restic Backups])
         S[Netdata Monitoring]
     end
-    B -->|Prompts| T(GroqCloud DeepSeek-32B)
-    H -->|Prompts| T
-    L -->|Prompts| T
-    H -->|API| V(Systeme.io CRM/Email)
+    R -->|Backup| Q([IDrive e2])
+    L -->|Prompts| T(GroqCloud DeepSeek-32B)
 ```
 
-- **Focus**: Adds RAIFA for financials within Docker Swarm Cluster, using APIs and reporting via Rocket.Chat, with backups to IDrive e2.
+- **Focus**: RAIFA manages financials, using APIs and reporting via Rocket.Chat, with SurrealDB and backups to external IDrive e2.
 
 ## Deployment
 - **Hetzner CCX23 Cluster**:
