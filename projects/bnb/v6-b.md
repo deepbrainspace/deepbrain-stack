@@ -38,8 +38,8 @@ This project automates operations, marketing, and financial management for a BnB
 ```mermaid
 flowchart TD
     U[Cloudflare DNS Proxy] -->|SSL| E[Traefik Reverse Proxy]
-    subgraph Cluster_Docker_Swarm[Hetzner CCX23 Cluster]
-        E --> Q{{AI Agents - OLGA, EMMA, RAIFA}}
+    subgraph Hetzner_CCX23_Cluster_Docker_Swarm[Hetzner CCX23 Cluster (Docker Swarm)]
+        E --> Q{{AI Agents (OLGA, EMMA, RAIFA)}}
     end
     Q -->|Prompts| T(GroqCloud DeepSeek-32B)
     Q -->|API| V(Systeme.io CRM/Email)
@@ -50,66 +50,130 @@ flowchart TD
 
 ### Phase I: Operations
 ```mermaid
-flowchart TD
-    U[Cloudflare DNS Proxy] -->|SSL| E[Traefik Reverse Proxy]
-    subgraph Docker_Swarm_Cluster
-        E -->|WebSocket| A[Rocket.Chat @Olga]
-        A -->|Ops| B{{OLGA Ops Lightweight GenAI Agent}}
-        B -->|Queries| C([SurrealDB TiKV])
-        B -->|Enhances| F[Heliocone]
-        R([Restic Backups])
-        S[Netdata Monitoring]
+graph TD
+    subgraph Hetzner_CCX23_Cluster_Docker_Swarm[Hetzner CCX23 Cluster (Docker Swarm)]
+        A[Guesty] -->|Webhooks| B[SurrealDB<br>TiKV Backend<br>Graph + Document + Vector]
+        C[Rocket.Chat] -->|Staff Questions<br>e.g. What was Jane's last request?| D{{OLGA Ops Lightweight GenAI Agent}}
+        B -->|SurrealQL Queries<br>Graph + Vector| D
+        D -->|English Question| E[GroqCloud<br>DeepSeek-32B]
+        E -->|Generated SurrealQL| D
+        D -->|Raw Data| E
+        E -->|Natural Response| D
+        D -->|Posts Results| C
+        F[Heliocone] -->|Enhances| D
+        G[Restic] -->|Backup| H([IDrive e2])
+        I[Netdata] -->|Monitoring| D
+        J[Traefik] -->|SSL| C
+        subgraph Data_Sources
+            A
+        end
+        subgraph Backend
+            B
+            G
+            I
+        end
+        subgraph Processing
+            D
+            E
+            F
+        end
+        subgraph Interface
+            C
+            J
+        end
     end
-    R -->|Backup| I([IDrive e2])
-    B -->|Prompts| T(GroqCloud DeepSeek-32B)
+    J -->|SSL| K[Cloudflare DNS Proxy]
 ```
 
-- **Focus**: OLGA manages ops, using Rocket.Chat, SurrealDB, and GroqCloud, with Restic backing up to external IDrive e2.
+- **Focus**: OLGA processes operational data from Guesty via SurrealDB, answers staff questions through Rocket.Chat, enhanced by GroqCloud and Heliocone, with backups to IDrive e2.
 
 ### Phase II: Marketing
 ```mermaid
-flowchart TD
-    U[Cloudflare DNS Proxy] -->|SSL| E[Traefik Reverse Proxy]
-    subgraph Docker_Swarm_Cluster
-        E -->|Analytics| G[Matomo Analytics]
-        E -->|Links| I[YOURLS URL Tracking]
-        E -->|Posts| J[Postiz Scheduling]
-        G -->|Data| H{{EMMA Efficient Multichannel Marketing Agent}}
-        I -->|Data| H
-        J -->|Content| H
-        H -->|Queries| C([SurrealDB TiKV])
-        H -->|Enhances| F[Heliocone]
-        R([Restic Backups])
-        S[Netdata Monitoring]
+graph TD
+    subgraph Hetzner_CCX23_Cluster_Docker_Swarm[Hetzner CCX23 Cluster (Docker Swarm)]
+        A[Matomo] -->|Analytics Data| B[SurrealDB<br>TiKV Backend<br>Graph + Document + Vector]
+        C[YOURLS] -->|Link Tracking| B
+        D[Postiz] -->|Scheduled Posts| E{{EMMA Efficient Multichannel Marketing Agent}}
+        B -->|SurrealQL Queries<br>Graph + Vector| E
+        E -->|English Question| F[GroqCloud<br>DeepSeek-32B]
+        F -->|Generated SurrealQL| E
+        E -->|Raw Data| F
+        F -->|Content Ideas| E
+        E -->|Posts Content| D
+        G[Systeme.io] -->|CRM/Email Data| E
+        H[Heliocone] -->|Enhances| E
+        I[Restic] -->|Backup| J([IDrive e2])
+        K[Netdata] -->|Monitoring| E
+        L[Traefik] -->|SSL| D
+        subgraph Data_Sources
+            A
+            C
+            G
+        end
+        subgraph Backend
+            B
+            I
+            K
+        end
+        subgraph Processing
+            E
+            F
+            H
+        end
+        subgraph Interface
+            D
+            L
+        end
     end
-    R -->|Backup| K([IDrive e2])
-    H -->|Prompts| T(GroqCloud DeepSeek-32B)
-    H -->|API| V(Systeme.io CRM/Email)
+    L -->|SSL| M[Cloudflare DNS Proxy]
 ```
 
-- **Focus**: EMMA handles marketing, integrating Matomo, YOURLS, and Postiz, with SurrealDB and backups to external IDrive e2.
+- **Focus**: EMMA generates marketing content using Matomo, YOURLS, and SurrealDB data, schedules via Postiz, integrates with Systeme.io, enhanced by GroqCloud and Heliocone, with backups to IDrive e2.
 
 ### Phase III: Financial
 ```mermaid
-flowchart TD
-    U[Cloudflare DNS Proxy] -->|SSL| E[Traefik Reverse Proxy]
-    subgraph Docker_Swarm_Cluster
-        E -->|WebSocket| A[Rocket.Chat @Raifa]
-        A -->|Reports| L{{RAIFA Responsive AI Financial Agent}}
-        L -->|Queries| C([SurrealDB TiKV])
-        M[Banking API] -->|Data| L
-        N[Guesty API] -->|Data| L
-        O[Stripe API] -->|Data| L
-        P[Tracking Matomo] -->|Data| L
-        L -->|Enhances| F[Heliocone]
-        R([Restic Backups])
-        S[Netdata Monitoring]
+graph TD
+    subgraph Hetzner_CCX23_Cluster_Docker_Swarm[Hetzner CCX23 Cluster (Docker Swarm)]
+        A[Banking API] -->|Transaction Data| B[SurrealDB<br>TiKV Backend<br>Graph + Document + Vector]
+        C[Guesty API] -->|Booking Data| B
+        D[Stripe API] -->|Payment Data| B
+        E[Matomo] -->|Tracking Data| B
+        F[Rocket.Chat] -->|Board Questions<br>e.g. Q2 profits?| G{{RAIFA Responsive AI Financial Agent}}
+        B -->|SurrealQL Queries<br>Graph + Vector| G
+        G -->|English Question| H[GroqCloud<br>DeepSeek-32B]
+        H -->|Generated SurrealQL| G
+        G -->|Raw Data| H
+        H -->|Financial Insights| G
+        G -->|Posts Results| F
+        I[Heliocone] -->|Enhances| G
+        J[Restic] -->|Backup| K([IDrive e2])
+        L[Netdata] -->|Monitoring| G
+        M[Traefik] -->|SSL| F
+        subgraph Data_Sources
+            A
+            C
+            D
+            E
+        end
+        subgraph Backend
+            B
+            J
+            L
+        end
+        subgraph Processing
+            G
+            H
+            I
+        end
+        subgraph Interface
+            F
+            M
+        end
     end
-    R -->|Backup| Q([IDrive e2])
-    L -->|Prompts| T(GroqCloud DeepSeek-32B)
+    M -->|SSL| N[Cloudflare DNS Proxy]
 ```
 
-- **Focus**: RAIFA manages financials, using APIs and reporting via Rocket.Chat, with SurrealDB and backups to external IDrive e2.
+- **Focus**: RAIFA analyzes financial data from Banking, Guesty, Stripe, and Matomo APIs via SurrealDB, answers board questions through Rocket.Chat, enhanced by GroqCloud and Heliocone, with backups to IDrive e2.
 
 ## Deployment
 - **Hetzner CCX23 Cluster**:
