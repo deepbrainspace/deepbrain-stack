@@ -53,7 +53,6 @@ flowchart TD
 ### Phase I: Operations
 ```mermaid
 graph TD
-graph TD
     A[Guesty] -->|Webhooks| B[SurrealDB<br>TiKV Backend<br>Graph + Document + Vector]
     C[Aircall] -->|Webhooks| B
     K[GroqCloud<br>DeepSeek-32B]
