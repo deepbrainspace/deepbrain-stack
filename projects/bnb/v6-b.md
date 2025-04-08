@@ -85,25 +85,23 @@ graph TD
 ```mermaid
 graph TD
     G[Systeme.io] -->|CRM/Email Data| B[SurrealDB<br>TiKV Backend<br>Graph + Document + Vector]
-    subgraph Hetzner_CCX23_Cluster_Docker_Swarm[Hetzner Swarm Cluster]
-        A[Matomo] -->|Analytics Data| B
-        C[YOURLS] -->|Link Tracking| B
-        J[Traefik] -->|SSL| D[Postiz]
-        D -->|Scheduled Posts| E{{EMMA Efficient Multichannel Marketing Agent}}
-        B -->|SurrealQL Queries<br>Graph + Vector| E
-        E -->|Posts Content| D
-        L[Heliocone] -->|Enhances| E
-        subgraph Data_Sources
-            A
-            B
-            C
-        end
-
-        subgraph Processing
-            E
-            L
-        end
+    A[Matomo] -->|Analytics Data| B
+    C[YOURLS] -->|Link Tracking| B
+    D -->|Scheduled Posts| E{{EMMA Efficient Multichannel Marketing Agent}}
+    B -->|SurrealQL Queries<br>Graph + Vector| E
+    E -->|Posts Content| D[Postiz]
+    L[Heliocone] -->|Enhances| E
+    subgraph Data_Sources
+        A
+        B
+        C
     end
+
+    subgraph Processing
+        E
+        L
+    end
+
     F -->|Generated SurrealQL| E
     E -->|Raw Data| F
     F -->|Content Ideas| E
@@ -119,25 +117,24 @@ graph TD
     A[Banking API] -->|Transaction Data| B[SurrealDB<br>TiKV Backend<br>Graph + Document + Vector]
     C[Guesty API] -->|Booking Data| B
     D[Stripe API] -->|Payment Data| B
-    subgraph Hetzner_CCX23_Cluster_Docker_Swarm[Hetzner Swarm Cluster]
-        E[Matomo] -->|Tracking Data| B
-        F -->|Board Questions<br>e.g. Q2 profits?| G{{RAIFA Responsive AI Financial Agent}}
-        B -->|SurrealQL Queries<br>Graph + Vector| G
-        G -->|Posts Results| F
-        M[Heliocone] -->|Enhances| G
-        subgraph Data_Sources
-            B
-            E
-        end
-        subgraph Backend
-            I
-            L
-        end
-        subgraph Processing
-            G
-            M
-        end
+    E[Matomo] -->|Tracking Data| B
+    F -->|Board Questions<br>e.g. Q2 profits?| G{{RAIFA Responsive AI Financial Agent}}
+    B -->|SurrealQL Queries<br>Graph + Vector| G
+    G -->|Posts Results| F
+    M[Heliocone] -->|Enhances| G
+    subgraph Data_Sources
+        B
+        E
     end
+    subgraph Backend
+        I
+        L
+    end
+    subgraph Processing
+        G
+        M
+    end
+
     H -->|Generated SurrealQL| G
     G -->|Raw Data| H
     H -->|Financial Insights| G
