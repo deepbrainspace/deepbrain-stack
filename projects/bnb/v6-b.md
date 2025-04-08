@@ -45,7 +45,7 @@ flowchart TD
     end
     Q -->|Prompts| T[GroqCloud DeepSeek-32B]
     Q -->|API| V[Systeme.io CRM/Email]
-    Q -->|Backup| I[IDrive e2]
+    Q -->|Backup| I[(IDrive e2)]
 ```
 
 - **Simplified view**: Hetzner CCX23 Cluster (running Docker Swarm) hosts AI Agents (OLGA, EMMA, RAIFA), connecting to external GroqCloud, Systeme.io, and IDrive e2 via Traefik, routed through Cloudflare.
