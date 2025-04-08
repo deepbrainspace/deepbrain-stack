@@ -91,19 +91,14 @@ graph TD
         J[Traefik] -->|SSL| D[Postiz]
         D -->|Scheduled Posts| E{{EMMA Efficient Multichannel Marketing Agent}}
         B -->|SurrealQL Queries<br>Graph + Vector| E
-        H[Restic]
         E -->|Posts Content| D
-        K[Netdata] -->|Monitoring| E
         L[Heliocone] -->|Enhances| E
         subgraph Data_Sources
             A
             B
             C
         end
-        subgraph Backend
-            H
-            K
-        end
+
         subgraph Processing
             E
             L
@@ -118,9 +113,6 @@ graph TD
     F -->|Content Ideas| E
         
     E -->|English Question| F[GroqCloud<br>DeepSeek-32B]
-    H -->|Backup| I[(IDrive e2)]
-           
-    J -->|SSL| M[Cloudflare DNS Proxy]
 ```
 
 - **Focus**: EMMA generates marketing content using internal Matomo, YOURLS, and SurrealDB data, schedules via Postiz, integrates with external Systeme.io, enhanced by GroqCloud and Heliocone, with backups to IDrive e2.
