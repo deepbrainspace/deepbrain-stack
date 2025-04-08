@@ -51,43 +51,32 @@ flowchart TD
 - **Simplified view**: Hetzner CCX23 Cluster (running Docker Swarm) hosts AI Agents (OLGA, EMMA, RAIFA), connecting to external GroqCloud, Systeme.io, and IDrive e2 via Traefik, routed through Cloudflare.
 
 ### Phase I: Operations
+
 ```mermaid
 graph TD
     A[Guesty] -->|Webhooks| B[SurrealDB<br>TiKV Backend<br>Graph + Document + Vector]
     C[Aircall] -->|Webhooks| B
-    K[GroqCloud<br>DeepSeek-32B]
-    H[(IDrive e2)]
-    subgraph Hetzner_CCX23_Cluster_Docker_Swarm[Hetzner Docker Cluster]
-        G[Restic]
-        J[Traefik] -->|SSL| F[Rocket.Chat]
-        F -->|Staff Questions<br>e.g. What was Jane's last request?| D{{OLGA Ops Lightweight GenAI Agent}}
-        B -->|SurrealQL Queries<br>Graph + Vector| D
-        D -->|Posts Results| F
-        I[Netdata] -->|Monitoring| D
-        E[Heliocone] -->|Enhances| D
-        subgraph Data_Sources
-            B
-        end
-        subgraph Backend
-            G
-            I
-        end
-        subgraph Processing
-            D
-            E
-        end
-        subgraph Interface
-            F
-            J
-        end
+    B -->|SurrealQL Queries<br>Graph + Vector| D[AI Agent]
+    D -->|English Question| E[GroqCloud<br>DeepSeek-Qwen32B or GPT-4o Mini]
+    E -->|Generated SurrealQL| D
+    D -->|Raw Data| E
+    E -->|Natural Response| D
+    D -->|Posts Results| F[Rocket.Chat]
+    F -->|Staff Questions<br>e.g. What was Jane's last request?| D
+    subgraph Data Sources
+        A
+        C
     end
-    
-    G -->|Backup| H
-    D -->|English Question| K
-    K -->|Generated SurrealQL| D
-    D -->|Raw Data| K
-    K -->|Natural Response| D
-    J -->|SSL| L[Cloudflare DNS Proxy]
+    subgraph Backend
+        B
+    end
+    subgraph Processing
+        D
+        E
+    end
+    subgraph Interface
+        F
+    end
 ```
 
 - **Focus**: OLGA processes operational data from external Guesty and Aircall via SurrealDB, answers staff questions through Rocket.Chat, enhanced by GroqCloud and Heliocone, with backups to IDrive e2.
