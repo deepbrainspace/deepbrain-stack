@@ -54,7 +54,7 @@ flowchart TD
 
 ```mermaid
 graph TD
-    A[Guesty] -->|Webhooks| B[SurrealDB<br>TiKV Backend<br>Graph + Document + Vector]
+    A[Guesty] -->|Webhooks| B[(SurrealDB<br>TiKV Backend<br>Graph + Document + Vector)]
     C[Aircall] -->|Webhooks| B
     B -->|SurrealQL Queries<br>Graph + Vector| D[AI Agent - OLGA]
     D -->|English Question| E[GroqCloud<br>DeepSeek-Qwen32B or GPT-4o Mini]
@@ -84,7 +84,7 @@ graph TD
 ### Phase II: Marketing
 ```mermaid
 graph TD
-    G[Systeme.io] -->|CRM/Email Data| B[SurrealDB<br>TiKV Backend<br>Graph + Document + Vector]
+    G[Systeme.io] -->|CRM/Email Data| B[(SurrealDB<br>TiKV Backend<br>Graph + Document + Vector)]
     A[Matomo] -->|Analytics Data| B
     C[YOURLS] -->|Link Tracking| B
     D -->|Scheduled Posts| E{{EMMA Efficient Multichannel Marketing Agent}}
@@ -114,7 +114,7 @@ graph TD
 ### Phase III: Financial
 ```mermaid
 graph TD
-    A[Banking API] -->|Transaction Data| B[SurrealDB<br>TiKV Backend<br>Graph + Document + Vector]
+    A[Banking API] -->|Transaction Data| B[(SurrealDB<br>TiKV Backend<br>Graph + Document + Vector)]
     C[Guesty API] -->|Booking Data| B
     D[Stripe API] -->|Payment Data| B
     E[Matomo] -->|Tracking Data| B
