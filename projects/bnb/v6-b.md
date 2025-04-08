@@ -51,7 +51,7 @@ flowchart TD
 ### Phase I: Operations
 ```mermaid
 graph TD
-    subgraph Hetzner_CCX23_Cluster_Docker_Swarm[Hetzner CCX23 Cluster (Docker Swarm)]
+    subgraph Hetzner_CCX23_Cluster_Docker_Swarm[Hetzner CCX23 Cluster]
         A[Guesty] -->|Webhooks| B[SurrealDB<br>TiKV Backend<br>Graph + Document + Vector]
         C[Rocket.Chat] -->|Staff Questions<br>e.g. What was Jane's last request?| D{{OLGA Ops Lightweight GenAI Agent}}
         B -->|SurrealQL Queries<br>Graph + Vector| D
@@ -90,7 +90,7 @@ graph TD
 ### Phase II: Marketing
 ```mermaid
 graph TD
-    subgraph Hetzner_CCX23_Cluster_Docker_Swarm[Hetzner CCX23 Cluster (Docker Swarm)]
+    subgraph Hetzner_CCX23_Cluster_Docker_Swarm[Hetzner CCX23 Cluster]
         A[Matomo] -->|Analytics Data| B[SurrealDB<br>TiKV Backend<br>Graph + Document + Vector]
         C[YOURLS] -->|Link Tracking| B
         D[Postiz] -->|Scheduled Posts| E{{EMMA Efficient Multichannel Marketing Agent}}
@@ -133,7 +133,7 @@ graph TD
 ### Phase III: Financial
 ```mermaid
 graph TD
-    subgraph Hetzner_CCX23_Cluster_Docker_Swarm[Hetzner CCX23 Cluster (Docker Swarm)]
+    subgraph Hetzner_CCX23_Cluster_Docker_Swarm[Hetzner CCX23 Cluster]
         A[Banking API] -->|Transaction Data| B[SurrealDB<br>TiKV Backend<br>Graph + Document + Vector]
         C[Guesty API] -->|Booking Data| B
         D[Stripe API] -->|Payment Data| B
