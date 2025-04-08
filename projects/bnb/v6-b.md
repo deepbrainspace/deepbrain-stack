@@ -37,103 +37,93 @@ This project automates operations, marketing, and financial management for a BnB
 ```mermaid
 flowchart TD
     U[Cloudflare DNS Proxy] --> E[Traefik Reverse Proxy]
-    E --> Q{{Hetzner CCX23 Cluster}}
+    subgraph Docker_Swarm_Cluster
+        E --> Q{{Hetzner CCX23 Cluster}}
+    end
     Q --> T(GroqCloud DeepSeek-32B)
     Q --> V(Systeme.io CRM/Email)
 ```
 
-- **Simplified view**: Hetzner cluster hosts all phases, connects to external GroqCloud and Systeme.io via Traefik, routed through Cloudflare.
+- **Simplified view**: Docker Swarm Cluster on Hetzner hosts all components, connects to external GroqCloud and Systeme.io via Traefik, routed through Cloudflare.
 
 ### Phase I: Operations
 ```mermaid
 flowchart TD
     U[Cloudflare DNS Proxy] --> E[Traefik Reverse Proxy]
-    E --> A[Rocket.Chat @Olga]
-    A --> B{{OLGA Ops Lightweight GenAI Agent}}
-    B --> C[SurrealDB TiKV]
-    B --> F[Heliocone]
+    subgraph Docker_Swarm_Cluster
+        E --> A[Rocket.Chat @Olga]
+        A --> B{{OLGA Ops Lightweight GenAI Agent}}
+        B --> C([SurrealDB TiKV])
+        B --> F[Heliocone]
+        R([Restic Backups]) --> I([IDrive e2])
+        S[Netdata Monitoring]
+    end
     B --> T(GroqCloud DeepSeek-32B)
-    Q[Docker Swarm Nodes] --> E
-    Q --> C
-    Q --> B
-    Q --> R[Restic Backups]
-    Q --> S[Netdata Monitoring]
 ```
 
-- **Focus**: OLGA drives ops within Hetzner cluster, using Rocket.Chat and SurrealDB, enhanced by GroqCloud.
+- **Focus**: OLGA runs ops within Docker Swarm Cluster, using Rocket.Chat, SurrealDB (storage), and Restic/IDrive e2 (backup).
 
 ### Phase II: Marketing
 ```mermaid
 flowchart TD
     U[Cloudflare DNS Proxy] --> E[Traefik Reverse Proxy]
-    E --> A[Rocket.Chat @Olga]
-    A --> B{{OLGA Ops Lightweight GenAI Agent}}
-    B --> C[SurrealDB TiKV]
-    E --> G[Matomo Analytics]
-    E --> I[YOURLS URL Tracking]
-    E --> J[Postiz Scheduling]
-    G --> H{{EMMA Efficient Multichannel Marketing Agent}}
-    I --> H
-    J --> H
-    H --> C
-    H --> F[Heliocone]
-    B --> F
-    H --> T(GroqCloud DeepSeek-32B)
-    B --> T
+    subgraph Docker_Swarm_Cluster
+        E --> A[Rocket.Chat @Olga]
+        A --> B{{OLGA Ops Lightweight GenAI Agent}}
+        B --> C([SurrealDB TiKV])
+        E --> G[Matomo Analytics]
+        E --> I[YOURLS URL Tracking]
+        E --> J[Postiz Scheduling]
+        G --> H{{EMMA Efficient Multichannel Marketing Agent}}
+        I --> H
+        J --> H
+        H --> C
+        B --> F[Heliocone]
+        H --> F
+        R([Restic Backups]) --> K([IDrive e2])
+        S[Netdata Monitoring]
+    end
+    B --> T(GroqCloud DeepSeek-32B)
+    H --> T
     H --> V(Systeme.io CRM/Email)
-    Q[Docker Swarm Nodes] --> E
-    Q --> C
-    Q --> B
-    Q --> H
-    Q --> G
-    Q --> I
-    Q --> J
-    Q --> R[Restic Backups]
-    Q --> S[Netdata Monitoring]
 ```
 
-- **Focus**: Adds EMMA and marketing tools, all hosted on Hetzner, integrating with Systeme.io externally.
+- **Focus**: Adds EMMA and marketing tools, all within Docker Swarm Cluster, with SurrealDB and Restic/IDrive e2 storage.
 
 ### Phase III: Financial
 ```mermaid
 flowchart TD
     U[Cloudflare DNS Proxy] --> E[Traefik Reverse Proxy]
-    E --> A[Rocket.Chat @Olga]
-    A --> B{{OLGA Ops Lightweight GenAI Agent}}
-    B --> C[SurrealDB TiKV]
-    E --> G[Matomo Analytics]
-    E --> I[YOURLS URL Tracking]
-    E --> J[Postiz Scheduling]
-    G --> H{{EMMA Efficient Multichannel Marketing Agent}}
-    I --> H
-    J --> H
-    H --> C
-    A --> L{{RAIFA Responsive AI Financial Agent}}
-    L --> C
-    M[Banking API] --> L
-    N[Guesty API] --> L
-    O[Stripe API] --> L
-    P[Tracking Matomo] --> L
-    B --> F[Heliocone]
-    H --> F
-    L --> F
+    subgraph Docker_Swarm_Cluster
+        E --> A[Rocket.Chat @Olga]
+        A --> B{{OLGA Ops Lightweight GenAI Agent}}
+        B --> C([SurrealDB TiKV])
+        E --> G[Matomo Analytics]
+        E --> I[YOURLS URL Tracking]
+        E --> J[Postiz Scheduling]
+        G --> H{{EMMA Efficient Multichannel Marketing Agent}}
+        I --> H
+        J --> H
+        H --> C
+        A --> L{{RAIFA Responsive AI Financial Agent}}
+        L --> C
+        M[Banking API] --> L
+        N[Guesty API] --> L
+        O[Stripe API] --> L
+        P[Tracking Matomo] --> L
+        B --> F[Heliocone]
+        H --> F
+        L --> F
+        R([Restic Backups]) --> Q([IDrive e2])
+        S[Netdata Monitoring]
+    end
     B --> T(GroqCloud DeepSeek-32B)
     H --> T
     L --> T
     H --> V(Systeme.io CRM/Email)
-    Q[Docker Swarm Nodes] --> E
-    Q --> C
-    Q --> B
-    Q --> H
-    Q --> L
-    Q --> G
-    Q --> I
-    Q --> J
-    Q --> R[Restic Backups]
-    Q --> S[Netdata Monitoring]
 ```
 
-- **Focus**: Adds RAIFA and financial APIs, fully integrated on Hetzner, interacting via Rocket.Chat.
+- **Focus**: Adds RAIFA and financial APIs, fully integrated within Docker Swarm Cluster, with storage via SurrealDB and Restic/IDrive e2.
 
 ## Deployment
 - **Hetzner CCX23 Cluster**:
