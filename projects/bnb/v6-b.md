@@ -61,10 +61,6 @@ graph TD
         J[Traefik] -->|SSL| F[Rocket.Chat]
         F -->|Staff Questions<br>e.g. What was Jane's last request?| D{{OLGA Ops Lightweight GenAI Agent}}
         B -->|SurrealQL Queries<br>Graph + Vector| D
-        D -->|English Question| K
-        K -->|Generated SurrealQL| D
-        D -->|Raw Data| K
-        K -->|Natural Response| D
         D -->|Posts Results| F
         G[Restic] -->|Backup| H
         I[Netdata] -->|Monitoring| D
@@ -85,6 +81,10 @@ graph TD
             J
         end
     end
+    D -->|English Question| K
+    K -->|Generated SurrealQL| D
+    D -->|Raw Data| K
+    K -->|Natural Response| D
     J -->|SSL| L[Cloudflare DNS Proxy]
 ```
 
