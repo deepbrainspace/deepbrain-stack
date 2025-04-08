@@ -56,7 +56,7 @@ graph TD
     A[Guesty] -->|Webhooks| B[SurrealDB<br>TiKV Backend<br>Graph + Document + Vector]
     C[Aircall] -->|Webhooks| B
     K[GroqCloud<br>DeepSeek-32B]
-    H[IDrive e2]
+    H[(IDrive e2)]
     subgraph Hetzner_CCX23_Cluster_Docker_Swarm[Hetzner Docker Cluster]
         G[Restic]
         J[Traefik] -->|SSL| F[Rocket.Chat]
