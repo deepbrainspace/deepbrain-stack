@@ -93,8 +93,8 @@ graph TD
     L[Heliocone] -->|Enhances| E
     subgraph Data_Sources
         A
-        B
         C
+        G
     end
 
     subgraph Processing
@@ -118,17 +118,15 @@ graph TD
     C[Guesty API] -->|Booking Data| B
     D[Stripe API] -->|Payment Data| B
     E[Matomo] -->|Tracking Data| B
-    F -->|Board Questions<br>e.g. Q2 profits?| G{{RAIFA Responsive AI Financial Agent}}
+    F[Rocket.Chat] -->|Board Questions<br>e.g. Q2 profits?| G{{RAIFA Responsive AI Financial Agent}}
     B -->|SurrealQL Queries<br>Graph + Vector| G
     G -->|Posts Results| F
     M[Heliocone] -->|Enhances| G
     subgraph Data_Sources
-        B
         E
-    end
-    subgraph Backend
-        I
-        L
+        A
+        C
+        D
     end
     subgraph Processing
         G
