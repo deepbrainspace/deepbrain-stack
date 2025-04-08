@@ -39,7 +39,7 @@ This project automates operations, marketing, and financial management for a BnB
 flowchart TD
     U[Cloudflare DNS Proxy] -->|SSL| E[Traefik Reverse Proxy]
     subgraph Cluster_Docker_Swarm[Hetzner CCX23 Cluster]
-        E --> Q{{AI Agents (OLGA, EMMA, RAIFA)}}
+        E --> Q{{AI Agents - OLGA, EMMA, RAIFA}}
     end
     Q -->|Prompts| T(GroqCloud DeepSeek-32B)
     Q -->|API| V(Systeme.io CRM/Email)
