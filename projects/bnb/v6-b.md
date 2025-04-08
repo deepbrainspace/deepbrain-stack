@@ -43,8 +43,8 @@ flowchart TD
     subgraph Hetzner_CCX23_Cluster_Docker_Swarm[Hetzner Swarm Cluster]
         E --> Q{{AI Agents - OLGA, EMMA, RAIFA}}
     end
-    Q -->|Prompts| T[GroqCloud DeepSeek-32B]
-    Q -->|API| V[External Data Sources]
+    Q <-->|Prompts| T[GroqCloud DeepSeek-32B]
+    Q <-- |API| V[External Data Sources]
     Q -->|Backup| I[(IDrive e2)]
 ```
 
