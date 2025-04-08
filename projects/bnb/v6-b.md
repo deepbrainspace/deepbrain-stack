@@ -146,9 +146,6 @@ graph TD
         J[Traefik] -->|SSL| F[Rocket.Chat]
         F -->|Board Questions<br>e.g. Q2 profits?| G{{RAIFA Responsive AI Financial Agent}}
         B -->|SurrealQL Queries<br>Graph + Vector| G
-        H -->|Generated SurrealQL| G
-        G -->|Raw Data| H
-        H -->|Financial Insights| G
         G -->|Posts Results| F
         I[Restic]
         L[Netdata] -->|Monitoring| G
@@ -171,7 +168,10 @@ graph TD
         end
     end
     I -->|Backup| K[(IDrive e2)]
-
+    H -->|Generated SurrealQL| G
+    G -->|Raw Data| H
+    H -->|Financial Insights| G
+        
     G -->|English Question| H[GroqCloud<br>DeepSeek-32B]
     J -->|SSL| N[Cloudflare DNS Proxy]
 ```
