@@ -1,0 +1,23 @@
+1. download the official windows 11 image and burn it into a USB stick.
+2. boot with the usb stick, start the installation process.
+3. press shift-f10 to get the command prompt then type 'regedit' and add the following:
+    a. HKEY_LOCAL_MACHINE\SYSTEM\Setup -> add a key LabConfig
+    b. inside labconfig add DWORD (32-bit)
+        i. BypassTPMCheck = 1
+        ii. BypassSecureBootCheck = 1
+        iii. BypassRAMCheck = 1
+        iv. BypassCPUCheck = 1
+4. type 'list disk' then choose the right disk you want to install it to and run the following:
+```
+list disk
+select disk 0
+clean
+convert gpt
+create partition efi size=100
+format quick fs=fat32 label="System"
+create partition msr size=16
+create partition primary
+format quick fs=ntfs label="Windows"
+exit
+```
+5. continue with the regular installation steps after this.
