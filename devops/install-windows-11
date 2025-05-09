@@ -21,3 +21,4 @@ format quick fs=ntfs label="Windows"
 exit
 ```
 5. continue with the regular installation steps after this.
+6. once windows is installed use this to activate - https://github.com/NiREvil/windows-activation
